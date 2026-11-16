@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "MediaForge — Local Media Studio",
+  "version": "1.0.0",
+  "description": "Universal privacy-first local media conversion and processing directly in your browser.",
+  "permissions": [
+    "contextMenus",
+    "downloads",
+    "offscreen",
+    "storage",
+    "sidePanel"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MediaForge Quick Tools"
+  },
+  "background": {
+    "service_worker": "assets/background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}
