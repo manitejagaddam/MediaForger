@@ -6,25 +6,26 @@ import {
   Trash2,
   HardDrive,
   CheckCircle2,
-  AlertCircle,
   RefreshCw,
-  Layers,
   Sliders,
   Upload,
   ArrowRight,
-  Eye,
-  SlidersHorizontal,
   Copy,
   Check,
-  Zap,
-  Image as ImageIcon,
   FolderOpen,
+  Pipette,
+  Palette,
+  Wand2,
+  Image as ImageIcon,
+  Sun,
+  Layers,
 } from 'lucide-react';
 import {
   AIEngine,
   REGISTERED_AI_MODELS,
   AIModelMeta,
   AIProcessResult,
+  BackgroundReplacementMode,
 } from '@mediaforge/ai-engine';
 import { db, StoredModelCacheEntry } from '@mediaforge/database';
 import { ObjectUrlManager } from '@mediaforge/storage';
@@ -45,7 +46,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const [activeTab, setActiveTab] = useState<'workspace' | 'models'>('workspace');
   const [provider, setProvider] = useState<'webgpu' | 'wasm'>('wasm');
   const [cachedModels, setCachedModels] = useState<StoredModelCacheEntry[]>([]);
-  const [selectedModelId, setSelectedModelId] = useState<string>('real-esrgan-x2');
+  const [selectedModelId, setSelectedModelId] = useState<string>('rmbg-1.4');
 
   // Input file state
   const [file, setFile] = useState<File | null>(initialFile || null);
@@ -59,23 +60,72 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const [copiedBase64, setCopiedBase64] = useState(false);
   const [splitSliderPos, setSplitSliderPos] = useState(50); // 0 to 100%
 
-  // Model parameters
+  // Upscale parameters
   const [upscaleFactor, setUpscaleFactor] = useState<2 | 4>(2);
-  const [unsharpStrength, setUnsharpStrength] = useState<number>(60); // 0 to 100
+  const [unsharpStrength, setUnsharpStrength] = useState<number>(60);
   const [denoise, setDenoise] = useState<boolean>(true);
 
-  const [bgThreshold, setBgThreshold] = useState<number>(45); // 0 to 100
-  const [bgFeather, setBgFeather] = useState<number>(2); // 0 to 10
+  // Background Removal & Replacement Studio State
+  const [bgMode, setBgMode] = useState<BackgroundReplacementMode>('transparent');
+  const [bgColor, setBgColor] = useState<string>('#ffffff');
+  const [bgGradientPreset, setBgGradientPreset] = useState<number>(0);
+  const [bgGradientAngle, setBgGradientAngle] = useState<number>(135);
+  const [bgImageFile, setBgImageFile] = useState<File | null>(null);
+  const [bgImageUrl, setBgImageUrl] = useState<string | null>(null);
+  const [bgBlurRadius, setBgBlurRadius] = useState<number>(25);
+
+  // Minute Edge & Segmentation Tuning
+  const [bgThreshold, setBgThreshold] = useState<number>(45); // 1 to 100
+  const [bgFeather, setBgFeather] = useState<number>(3); // 0 to 15 px
+  const [bgEdgeShift, setBgEdgeShift] = useState<number>(-2); // -10 to +10 px (choke/expand)
   const [invertMask, setInvertMask] = useState<boolean>(false);
 
-  const [clarity, setClarity] = useState<number>(50); // 0 to 100
-  const [vibrance, setVibrance] = useState<number>(40); // 0 to 100
-  const [hdrBoost, setHdrBoost] = useState<number>(30); // 0 to 100
+  // Drop Shadow for Compositing
+  const [enableShadow, setEnableShadow] = useState<boolean>(false);
+  const [shadowOpacity, setShadowOpacity] = useState<number>(40);
+  const [shadowBlur, setShadowBlur] = useState<number>(20);
+  const [shadowOffsetY, setShadowOffsetY] = useState<number>(10);
 
-  // Download / import state
+  // Eyedropper Key Color Sampling
+  const [sampleKeyColor, setSampleKeyColor] = useState<[number, number, number] | null>(null);
+  const [isEyedropperActive, setIsEyedropperActive] = useState<boolean>(false);
+
+  // Output export options
+  const [outputFormat, setOutputFormat] = useState<'png' | 'jpeg' | 'webp'>('png');
+  const [outputQuality, setOutputQuality] = useState<number>(92);
+
+  // Clarity / Enhancement parameters
+  const [clarity, setClarity] = useState<number>(50);
+  const [vibrance, setVibrance] = useState<number>(40);
+  const [hdrBoost, setHdrBoost] = useState<number>(30);
+
+  // Download / import refs
   const [downloadingModelId, setDownloadingModelId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bgImageInputRef = useRef<HTMLInputElement>(null);
   const customModelInputRef = useRef<HTMLInputElement>(null);
+  const previewImgRef = useRef<HTMLImageElement>(null);
+
+  // Preset Colors & Gradients
+  const SOLID_SWATCHES = [
+    { label: 'Clean White', color: '#ffffff' },
+    { label: 'Studio Dark', color: '#0b0f19' },
+    { label: 'Neutral Gray', color: '#64748b' },
+    { label: 'Royal Navy', color: '#0f172a' },
+    { label: 'Chroma Green', color: '#22c55e' },
+    { label: 'Pastel Rose', color: '#fbcfe8' },
+    { label: 'Mint Soft', color: '#a7f3d0' },
+    { label: 'Crimson Red', color: '#ef4444' },
+  ];
+
+  const GRADIENT_PRESETS = [
+    { name: 'Ocean Breeze', colors: ['#0ea5e9', '#3b82f6'] },
+    { name: 'Sunset Glow', colors: ['#f43f5e', '#8b5cf6'] },
+    { name: 'Midnight Nebula', colors: ['#0f172a', '#312e81'] },
+    { name: 'Minimal Studio', colors: ['#f8fafc', '#94a3b8'] },
+    { name: 'Neon Cyber', colors: ['#ec4899', '#eab308'] },
+    { name: 'Emerald Forest', colors: ['#064e3b', '#047857'] },
+  ];
 
   useEffect(() => {
     AIEngine.resolveExecutionProvider().then(setProvider);
@@ -100,6 +150,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
     return () => {
       if (inputUrl) ObjectUrlManager.revoke(inputUrl);
       if (outputUrl) ObjectUrlManager.revoke(outputUrl);
+      if (bgImageUrl) ObjectUrlManager.revoke(bgImageUrl);
     };
   }, []);
 
@@ -111,6 +162,8 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const handleFileSelected = async (selectedFile: File) => {
     setFile(selectedFile);
     setResult(null);
+    setSampleKeyColor(null);
+    setIsEyedropperActive(false);
     if (outputUrl) {
       ObjectUrlManager.revoke(outputUrl);
       setOutputUrl(null);
@@ -122,6 +175,13 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
     if (inputUrl) ObjectUrlManager.revoke(inputUrl);
     const url = ObjectUrlManager.create(selectedFile);
     setInputUrl(url);
+  };
+
+  const handleBgImageSelected = (selectedFile: File) => {
+    setBgImageFile(selectedFile);
+    if (bgImageUrl) ObjectUrlManager.revoke(bgImageUrl);
+    const url = ObjectUrlManager.create(selectedFile);
+    setBgImageUrl(url);
   };
 
   const handleDownloadModel = async (model: AIModelMeta) => {
@@ -167,13 +227,47 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const activeTask =
     activeModel && 'task' in activeModel && activeModel.task
       ? activeModel.task
-      : selectedModelId.includes('rmbg')
+      : selectedModelId.includes('rmbg') || selectedModelId.includes('bg')
       ? 'background-removal'
       : selectedModelId.includes('clarity') || selectedModelId.includes('enhance')
       ? 'enhancement'
       : 'upscale';
 
   const isSelectedModelCached = cachedModels.some((m) => m.modelId === selectedModelId);
+
+  // Eyedropper click handler on canvas/image preview
+  const handlePreviewClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!isEyedropperActive || !file || !previewImgRef.current) return;
+
+    const img = previewImgRef.current;
+    const rect = img.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const naturalWidth = img.naturalWidth || inspection?.width || 100;
+    const naturalHeight = img.naturalHeight || inspection?.height || 100;
+
+    const pixelX = Math.floor((clickX / rect.width) * naturalWidth);
+    const pixelY = Math.floor((clickY / rect.height) * naturalHeight);
+
+    // Read pixel color via temporary canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = naturalWidth;
+    canvas.height = naturalHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(img, 0, 0);
+    const pixel = ctx.getImageData(
+      Math.max(0, Math.min(naturalWidth - 1, pixelX)),
+      Math.max(0, Math.min(naturalHeight - 1, pixelY)),
+      1,
+      1
+    ).data;
+
+    setSampleKeyColor([pixel[0], pixel[1], pixel[2]]);
+    setIsEyedropperActive(false);
+  };
 
   const handleExecuteAI = async () => {
     if (!file) return;
@@ -191,10 +285,33 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       let res: AIProcessResult;
 
       if (activeTask === 'background-removal') {
+        const gradientConfig = {
+          colors: GRADIENT_PRESETS[bgGradientPreset]?.colors || ['#0ea5e9', '#3b82f6'],
+          angle: bgGradientAngle,
+        };
+
+        const shadowConfig = {
+          enabled: enableShadow,
+          opacity: shadowOpacity / 100,
+          blur: shadowBlur,
+          offsetY: shadowOffsetY,
+          offsetX: 0,
+        };
+
         res = await AIEngine.removeBackground(file, {
           threshold: bgThreshold,
           featherRadius: bgFeather,
+          edgeShift: bgEdgeShift,
           invertMask,
+          sampleKeyColor,
+          mode: bgMode,
+          backgroundColor: bgColor,
+          gradient: gradientConfig,
+          backgroundImage: bgImageFile,
+          blurRadius: bgBlurRadius,
+          shadow: shadowConfig,
+          outputFormat: bgMode === 'transparent' ? 'png' : outputFormat,
+          outputQuality,
         });
       } else if (activeTask === 'enhancement') {
         res = await AIEngine.enhanceImage(file, {
@@ -217,7 +334,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       setOutputUrl(newUrl);
 
       // Save to conversion history
-      const ext = activeTask === 'background-removal' ? 'png' : 'png';
+      const ext = bgMode === 'transparent' ? 'png' : outputFormat;
       const outputName = `${file.name.replace(/\.[^/.]+$/, '')}_ai_${res.modelUsed}.${ext}`;
       await db.history.put({
         id: `ai_${Date.now()}`,
@@ -240,7 +357,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
   const handleDownloadResult = () => {
     if (!result || !file) return;
-    const ext = activeTask === 'background-removal' ? 'png' : 'png';
+    const ext = bgMode === 'transparent' ? 'png' : outputFormat;
     const outputName = `${file.name.replace(/\.[^/.]+$/, '')}_ai_${result.modelUsed}.${ext}`;
     ExportManager.download(result.blob, outputName);
   };
@@ -274,7 +391,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
               </span>
             </h3>
             <p className="text-xs text-gray-400 mt-0.5">
-              Super-resolution upscaling, instant alpha background removal, and HDR clarity enhancement. 100% on-device local execution.
+              Precision background removal & replacement, 2x/4x super-resolution, and HDR clarity. 100% on-device local execution.
             </p>
           </div>
         </div>
@@ -346,7 +463,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                 Select an Image for AI Processing
               </h3>
               <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
-                Super-resolve 2x/4x, remove complex backgrounds with alpha matting, or apply neural clarity. Runs directly on your device.
+                Isolate subjects with precision connected flood-fill, replace backgrounds with studio colors or gradients, or upscale up to 4x.
               </p>
               <button className="mt-5 px-5 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-xs font-semibold shadow-lg shadow-fuchsia-600/25 transition">
                 Browse Image
@@ -354,7 +471,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Left Column: Visual Canvas & Before/After Comparison (7 cols) */}
+              {/* Left Column: Visual Canvas & Interactive Before/After Split (7 cols) */}
               <div className="lg:col-span-7 space-y-6">
                 <div className="glass-panel rounded-2xl p-5 space-y-4">
                   <div className="flex items-center justify-between border-b border-gray-800 pb-3">
@@ -370,20 +487,53 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => {
-                        setFile(null);
-                        setResult(null);
-                        onClearFile?.();
-                      }}
-                      className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
-                    >
-                      Change Image
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {activeTask === 'background-removal' && (
+                        <button
+                          onClick={() => setIsEyedropperActive((prev) => !prev)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                            isEyedropperActive
+                              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20 font-bold'
+                              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                          }`}
+                          title="Click on the image to sample the background color to remove"
+                        >
+                          <Pipette className="w-3.5 h-3.5" />
+                          <span>{isEyedropperActive ? 'Click to Sample' : 'Eyedropper'}</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setFile(null);
+                          setResult(null);
+                          onClearFile?.();
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
+                      >
+                        Change Image
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Interactive Split-Screen Comparison or Single View */}
-                  <div className="relative rounded-xl bg-[#080c14] border border-gray-800/80 overflow-hidden min-h-[340px] flex items-center justify-center select-none">
+                  {/* Eyedropper Notice Banner */}
+                  {isEyedropperActive && (
+                    <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between animate-pulse">
+                      <div className="flex items-center gap-2">
+                        <Pipette className="w-4 h-4 text-amber-400" />
+                        <span>Eyedropper active: Click anywhere on the image below to target that exact background color.</span>
+                      </div>
+                      <button
+                        onClick={() => setIsEyedropperActive(false)}
+                        className="text-[11px] font-bold text-amber-200 hover:underline"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Interactive Split-Screen Comparison or Eyedropper Viewport */}
+                  <div className="relative rounded-xl bg-[#080c14] border border-gray-800/80 overflow-hidden min-h-[360px] flex items-center justify-center select-none">
                     {/* Checkerboard background for transparency preview */}
                     <div
                       className="absolute inset-0 opacity-15"
@@ -395,12 +545,12 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
                     {result && outputUrl && inputUrl ? (
                       /* Before / After Interactive Split-View */
-                      <div className="relative w-full h-[400px] overflow-hidden flex items-center justify-center">
+                      <div className="relative w-full h-[420px] overflow-hidden flex items-center justify-center">
                         {/* Processed (After) Image */}
                         <img
                           src={outputUrl}
                           alt="AI Output"
-                          className="absolute max-h-full max-w-full object-contain"
+                          className="absolute max-h-full max-w-full object-contain pointer-events-none"
                         />
 
                         {/* Original (Before) Image with clip-path */}
@@ -411,9 +561,13 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           }}
                         >
                           <img
+                            ref={previewImgRef}
                             src={inputUrl}
                             alt="Original Input"
-                            className="max-h-full max-w-full object-contain"
+                            onClick={handlePreviewClick}
+                            className={`max-h-full max-w-full object-contain ${
+                              isEyedropperActive ? 'cursor-crosshair' : ''
+                            }`}
                           />
                         </div>
 
@@ -432,7 +586,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           Original
                         </div>
                         <div className="absolute top-3 right-3 px-2 py-1 rounded bg-fuchsia-950/80 backdrop-blur text-[10px] font-mono text-fuchsia-300 border border-fuchsia-800/60">
-                          AI Enhanced
+                          {bgMode === 'transparent' ? 'Cutout (Alpha)' : `Replaced (${bgMode})`}
                         </div>
 
                         {/* Scrub Range Slider */}
@@ -446,16 +600,47 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         />
                       </div>
                     ) : (
-                      /* Single Input Preview */
+                      /* Single Input Preview with Eyedropper Support */
                       inputUrl && (
-                        <img
-                          src={inputUrl}
-                          alt="Input Preview"
-                          className="max-h-[380px] max-w-full object-contain p-2"
-                        />
+                        <div className="relative p-2 flex items-center justify-center max-h-[420px]">
+                          <img
+                            ref={previewImgRef}
+                            src={inputUrl}
+                            alt="Input Preview"
+                            onClick={handlePreviewClick}
+                            className={`max-h-[380px] max-w-full object-contain rounded-lg ${
+                              isEyedropperActive ? 'cursor-crosshair ring-2 ring-amber-400' : ''
+                            }`}
+                          />
+                        </div>
                       )
                     )}
                   </div>
+
+                  {/* Sampled Eyedropper Color Info Strip */}
+                  {sampleKeyColor && (
+                    <div className="p-3 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-400">Target Key Color:</span>
+                        <div
+                          className="w-5 h-5 rounded-md border border-gray-700 shadow"
+                          style={{
+                            backgroundColor: `rgb(${sampleKeyColor[0]}, ${sampleKeyColor[1]}, ${sampleKeyColor[2]})`,
+                          }}
+                        />
+                        <span className="font-mono text-gray-200 font-medium">
+                          RGB({sampleKeyColor[0]}, {sampleKeyColor[1]}, {sampleKeyColor[2]})
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => setSampleKeyColor(null)}
+                        className="text-xs text-rose-400 hover:text-rose-300 transition"
+                      >
+                        Reset to Auto
+                      </button>
+                    </div>
+                  )}
 
                   {/* Result Stats Strip */}
                   {result && (
@@ -565,10 +750,370 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                     </p>
                   </div>
 
-                  {/* Task Specific Controls */}
+                  {/* Background Removal & Replacement Studio */}
+                  {activeTask === 'background-removal' && (
+                    <div className="space-y-5 pt-2 border-t border-gray-800/80">
+                      {/* Background Mode Selector */}
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                          <Palette className="w-3.5 h-3.5 text-fuchsia-400" />
+                          <span>Background Mode</span>
+                        </label>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => setBgMode('transparent')}
+                            className={`py-2 px-1 rounded-xl font-medium border text-center transition ${
+                              bgMode === 'transparent'
+                                ? 'bg-fuchsia-600/20 border-fuchsia-500 text-fuchsia-400 font-bold'
+                                : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white'
+                            }`}
+                          >
+                            Transparent
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBgMode('color')}
+                            className={`py-2 px-1 rounded-xl font-medium border text-center transition ${
+                              bgMode === 'color'
+                                ? 'bg-fuchsia-600/20 border-fuchsia-500 text-fuchsia-400 font-bold'
+                                : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white'
+                            }`}
+                          >
+                            Solid Color
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBgMode('gradient')}
+                            className={`py-2 px-1 rounded-xl font-medium border text-center transition ${
+                              bgMode === 'gradient'
+                                ? 'bg-fuchsia-600/20 border-fuchsia-500 text-fuchsia-400 font-bold'
+                                : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white'
+                            }`}
+                          >
+                            Gradient
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setBgMode('blur')}
+                            className={`py-2 px-2 rounded-xl font-medium border text-center transition ${
+                              bgMode === 'blur'
+                                ? 'bg-fuchsia-600/20 border-fuchsia-500 text-fuchsia-400 font-bold'
+                                : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white'
+                            }`}
+                          >
+                            Bokeh Blur (DSLR)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBgMode('image')}
+                            className={`py-2 px-2 rounded-xl font-medium border text-center transition ${
+                              bgMode === 'image'
+                                ? 'bg-fuchsia-600/20 border-fuchsia-500 text-fuchsia-400 font-bold'
+                                : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white'
+                            }`}
+                          >
+                            Custom Image
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Mode-Specific Customization Options */}
+                      {bgMode === 'color' && (
+                        <div className="space-y-3 p-3.5 rounded-xl bg-gray-900/80 border border-gray-800">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-gray-300">Choose Solid Color</span>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={bgColor}
+                                onChange={(e) => setBgColor(e.target.value)}
+                                className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <input
+                                type="text"
+                                value={bgColor}
+                                onChange={(e) => setBgColor(e.target.value)}
+                                className="w-20 px-2 py-0.5 rounded bg-black/60 border border-gray-700 text-white font-mono text-[11px]"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Quick Swatches */}
+                          <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                            {SOLID_SWATCHES.map((swatch) => (
+                              <button
+                                key={swatch.color}
+                                type="button"
+                                onClick={() => setBgColor(swatch.color)}
+                                className={`w-6 h-6 rounded-lg border transition ${
+                                  bgColor.toLowerCase() === swatch.color.toLowerCase()
+                                    ? 'ring-2 ring-fuchsia-500 scale-110'
+                                    : 'border-gray-700 hover:scale-105'
+                                }`}
+                                style={{ backgroundColor: swatch.color }}
+                                title={swatch.label}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {bgMode === 'gradient' && (
+                        <div className="space-y-3 p-3.5 rounded-xl bg-gray-900/80 border border-gray-800">
+                          <span className="text-[11px] font-bold text-gray-300">Studio Gradient Themes</span>
+                          <div className="grid grid-cols-3 gap-2">
+                            {GRADIENT_PRESETS.map((preset, idx) => (
+                              <button
+                                key={preset.name}
+                                type="button"
+                                onClick={() => setBgGradientPreset(idx)}
+                                className={`h-10 rounded-xl border flex items-end p-1.5 transition ${
+                                  bgGradientPreset === idx
+                                    ? 'ring-2 ring-fuchsia-500 border-white'
+                                    : 'border-gray-800 hover:border-gray-700'
+                                }`}
+                                style={{
+                                  background: `linear-gradient(135deg, ${preset.colors[0]}, ${preset.colors[1]})`,
+                                }}
+                              >
+                                <span className="text-[9px] font-bold text-white drop-shadow truncate">
+                                  {preset.name}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="space-y-1 pt-1">
+                            <div className="flex justify-between text-[11px]">
+                              <span className="text-gray-400">Gradient Angle</span>
+                              <span className="text-white font-mono">{bgGradientAngle}°</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="360"
+                              value={bgGradientAngle}
+                              onChange={(e) => setBgGradientAngle(Number(e.target.value))}
+                              className="w-full accent-fuchsia-500"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {bgMode === 'blur' && (
+                        <div className="space-y-2 p-3.5 rounded-xl bg-gray-900/80 border border-gray-800">
+                          <div className="flex justify-between text-[11px]">
+                            <span className="text-gray-300 font-bold">Bokeh Blur Intensity</span>
+                            <span className="text-fuchsia-400 font-mono">{bgBlurRadius} px</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="5"
+                            max="45"
+                            value={bgBlurRadius}
+                            onChange={(e) => setBgBlurRadius(Number(e.target.value))}
+                            className="w-full accent-fuchsia-500"
+                          />
+                          <p className="text-[10px] text-gray-400">
+                            Simulates a shallow depth-of-field lens blur on original background while keeping the subject sharp.
+                          </p>
+                        </div>
+                      )}
+
+                      {bgMode === 'image' && (
+                        <div className="space-y-2 p-3.5 rounded-xl bg-gray-900/80 border border-gray-800">
+                          <span className="text-[11px] font-bold text-gray-300">Replacement Background Image</span>
+                          <input
+                            ref={bgImageInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleBgImageSelected(e.target.files[0]);
+                              }
+                            }}
+                          />
+                          {bgImageUrl ? (
+                            <div className="relative rounded-lg overflow-hidden border border-gray-700 h-24 flex items-center justify-center">
+                              <img src={bgImageUrl} alt="BG" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => bgImageInputRef.current?.click()}
+                                className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/80 text-[10px] text-white hover:bg-black"
+                              >
+                                Replace
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => bgImageInputRef.current?.click()}
+                              className="w-full py-3 border border-dashed border-gray-700 hover:border-fuchsia-500 rounded-xl text-xs text-gray-400 hover:text-white flex items-center justify-center gap-2 transition"
+                            >
+                              <Upload className="w-4 h-4 text-fuchsia-400" />
+                              <span>Select Background Image</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Drop Shadow Compositing (when replacement is active) */}
+                      {bgMode !== 'transparent' && (
+                        <div className="space-y-3 p-3.5 rounded-xl bg-gray-900/80 border border-gray-800">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-bold text-white">Subject Drop Shadow</p>
+                              <p className="text-[10px] text-gray-400">Adds realistic depth against new backdrop</p>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={enableShadow}
+                              onChange={(e) => setEnableShadow(e.target.checked)}
+                              className="w-4 h-4 accent-fuchsia-500 rounded cursor-pointer"
+                            />
+                          </div>
+
+                          {enableShadow && (
+                            <div className="space-y-2 pt-2 border-t border-gray-800">
+                              <div className="flex justify-between text-[11px]">
+                                <span className="text-gray-400">Shadow Opacity</span>
+                                <span className="text-white font-mono">{shadowOpacity}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="10"
+                                max="90"
+                                value={shadowOpacity}
+                                onChange={(e) => setShadowOpacity(Number(e.target.value))}
+                                className="w-full accent-fuchsia-500"
+                              />
+
+                              <div className="flex justify-between text-[11px]">
+                                <span className="text-gray-400">Shadow Blur</span>
+                                <span className="text-white font-mono">{shadowBlur} px</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="5"
+                                max="40"
+                                value={shadowBlur}
+                                onChange={(e) => setShadowBlur(Number(e.target.value))}
+                                className="w-full accent-fuchsia-500"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Minute Edge & Boundary Controls */}
+                      <div className="space-y-3 pt-2">
+                        <h5 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                          <Wand2 className="w-3.5 h-3.5 text-fuchsia-400" />
+                          <span>Minute Edge & Alpha Controls</span>
+                        </h5>
+
+                        {/* Matting Sensitivity / Tolerance */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-400">Color Sensitivity / Tolerance</span>
+                            <span className="text-white font-mono">{bgThreshold}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="5"
+                            max="95"
+                            value={bgThreshold}
+                            onChange={(e) => setBgThreshold(Number(e.target.value))}
+                            className="w-full accent-fuchsia-500"
+                          />
+                        </div>
+
+                        {/* Edge Shift (Choke & Expand) */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-400">Edge Shift (Choke / Expand)</span>
+                            <span className="text-white font-mono">
+                              {bgEdgeShift > 0 ? `+${bgEdgeShift}` : bgEdgeShift} px
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="-8"
+                            max="8"
+                            value={bgEdgeShift}
+                            onChange={(e) => setBgEdgeShift(Number(e.target.value))}
+                            className="w-full accent-fuchsia-500"
+                          />
+                          <p className="text-[10px] text-gray-400">
+                            Negative values choke mask inward to erase background halos/fringing from hair and edges.
+                          </p>
+                        </div>
+
+                        {/* Boundary Feathering */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-400">Anti-Aliasing Feather Radius</span>
+                            <span className="text-white font-mono">{bgFeather} px</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="12"
+                            value={bgFeather}
+                            onChange={(e) => setBgFeather(Number(e.target.value))}
+                            className="w-full accent-fuchsia-500"
+                          />
+                        </div>
+
+                        {/* Invert Mask */}
+                        <div className="flex items-center justify-between pt-1">
+                          <div>
+                            <p className="text-xs font-medium text-white">Invert Mask</p>
+                            <p className="text-[10px] text-gray-400">Keep background and erase subject</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={invertMask}
+                            onChange={(e) => setInvertMask(e.target.checked)}
+                            className="w-4 h-4 accent-fuchsia-500 rounded cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Export Format Selector */}
+                      {bgMode !== 'transparent' && (
+                        <div className="space-y-2 pt-2 border-t border-gray-800">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-gray-400">Output Format</span>
+                            <div className="flex items-center gap-1.5 font-mono">
+                              {(['png', 'jpeg', 'webp'] as const).map((fmt) => (
+                                <button
+                                  key={fmt}
+                                  type="button"
+                                  onClick={() => setOutputFormat(fmt)}
+                                  className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border transition ${
+                                    outputFormat === fmt
+                                      ? 'bg-fuchsia-600/20 border-fuchsia-500 text-fuchsia-400'
+                                      : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white'
+                                  }`}
+                                >
+                                  {fmt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Upscale Controls */}
                   {activeTask === 'upscale' && (
                     <div className="space-y-4 pt-2 border-t border-gray-800/80">
-                      {/* Scale Factor */}
                       <div className="space-y-2">
                         <label className="text-[11px] font-medium text-gray-300">
                           Super-Resolution Scale
@@ -605,7 +1150,6 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         </div>
                       </div>
 
-                      {/* Detail Reconstruction Sharpness */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-400">Edge Sharpness</span>
@@ -621,7 +1165,6 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         />
                       </div>
 
-                      {/* Denoise Toggle */}
                       <div className="flex items-center justify-between pt-1">
                         <div>
                           <p className="text-xs font-medium text-white">Bilateral Denoising</p>
@@ -639,61 +1182,9 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                     </div>
                   )}
 
-                  {activeTask === 'background-removal' && (
-                    <div className="space-y-4 pt-2 border-t border-gray-800/80">
-                      {/* Color Distance Threshold */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Matting Sensitivity</span>
-                          <span className="text-white font-mono">{bgThreshold}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="10"
-                          max="90"
-                          value={bgThreshold}
-                          onChange={(e) => setBgThreshold(Number(e.target.value))}
-                          className="w-full accent-fuchsia-500"
-                        />
-                      </div>
-
-                      {/* Feather Radius */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Boundary Feathering</span>
-                          <span className="text-white font-mono">{bgFeather} px</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="8"
-                          value={bgFeather}
-                          onChange={(e) => setBgFeather(Number(e.target.value))}
-                          className="w-full accent-fuchsia-500"
-                        />
-                      </div>
-
-                      {/* Invert Mask */}
-                      <div className="flex items-center justify-between pt-1">
-                        <div>
-                          <p className="text-xs font-medium text-white">Invert Mask</p>
-                          <p className="text-[10px] text-gray-400">
-                            Extract background instead of foreground
-                          </p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={invertMask}
-                          onChange={(e) => setInvertMask(e.target.checked)}
-                          className="w-4 h-4 accent-fuchsia-500 rounded cursor-pointer"
-                        />
-                      </div>
-                    </div>
-                  )}
-
+                  {/* Enhancement Controls */}
                   {activeTask === 'enhancement' && (
                     <div className="space-y-4 pt-2 border-t border-gray-800/80">
-                      {/* Clarity */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-400">Micro-Contrast Clarity</span>
@@ -709,7 +1200,6 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         />
                       </div>
 
-                      {/* HDR Shadow Lift */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-400">HDR Shadow Recovery</span>
@@ -725,7 +1215,6 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         />
                       </div>
 
-                      {/* Vibrance */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-400">Color Vibrance</span>
@@ -762,7 +1251,9 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                             {activeTask === 'upscale'
                               ? `Upscale ${upscaleFactor}x (${(inspection?.width || 0) * upscaleFactor} × ${(inspection?.height || 0) * upscaleFactor}px)`
                               : activeTask === 'background-removal'
-                              ? 'Remove Background (Alpha Matte)'
+                              ? bgMode === 'transparent'
+                                ? 'Extract Transparent Cutout'
+                                : `Replace Background (${bgMode.toUpperCase()})`
                               : 'Enhance Clarity & HDR'}
                           </span>
                         </>

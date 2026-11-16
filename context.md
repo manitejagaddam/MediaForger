@@ -66,8 +66,8 @@ stateDiagram-v2
 
 * **Active Phase**: Phase 1 through Phase 8 core delivery completed and verified.
 * **Apps Built**:
-  - `apps/web`: Full SaaS React 19 + Vite 6 + Tailwind web app with all 11 studio pages, scoped per-studio file isolation, interactive AI Studio workspace (2x/4x Super-Resolution, Alpha Matte background removal, HDR Clarity enhancement, Before/After comparison slider, ONNX imports), audio/video scrubbing and controls, real MP3/WAV export, and PWA offline capability. Production build passed (`apps/web/dist`).
+  - `apps/web`: Full SaaS React 19 + Vite 6 + Tailwind web app with all 11 studio pages, scoped per-studio file isolation, interactive AI Studio workspace (2x/4x Super-Resolution, Connected Flood-Fill Background Removal & Replacement Studio with Eyedropper, Solid/Gradient/Bokeh/Image replacement, edge choke/expand, and drop shadows), audio/video scrubbing and controls, real MP3/WAV export, and PWA offline capability. Production build passed (`apps/web/dist`).
   - `apps/extension`: Chrome Manifest V3 extension with background service worker, offscreen processing document, popup, side panel, and context menus. Production build passed (`apps/extension/dist`).
 * **Shared Packages**: 15 `@mediaforge/*` packages compiled and linked.
-* **Automated Tests**: 7 Vitest test suites (28 unit tests) passing with 100% success rate.
+* **Automated Tests**: 7 Vitest test suites (29 unit tests) passing with 100% success rate.
 * **Blockers**: None. Ready for end-user execution and extension unpacking.

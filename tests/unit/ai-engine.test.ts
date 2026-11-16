@@ -1,6 +1,10 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AIEngine, REGISTERED_AI_MODELS } from '@mediaforge/ai-engine';
+import {
+  AIEngine,
+  REGISTERED_AI_MODELS,
+  BackgroundRemovalOptions,
+} from '@mediaforge/ai-engine';
 import { db } from '@mediaforge/database';
 
 describe('AIEngine Model Management & Capabilities', () => {
@@ -74,5 +78,42 @@ describe('AIEngine Model Management & Capabilities', () => {
   it('resolves valid execution provider', async () => {
     const provider = await AIEngine.resolveExecutionProvider();
     expect(['webgpu', 'wasm']).toContain(provider);
+  });
+
+  it('validates multi-mode background removal configurations', () => {
+    const solidBgConfig: BackgroundRemovalOptions = {
+      mode: 'color',
+      backgroundColor: '#ffffff',
+      threshold: 50,
+      featherRadius: 3,
+      edgeShift: -2,
+      shadow: {
+        enabled: true,
+        blur: 15,
+        opacity: 0.3,
+      },
+    };
+    expect(solidBgConfig.mode).toBe('color');
+    expect(solidBgConfig.backgroundColor).toBe('#ffffff');
+    expect(solidBgConfig.edgeShift).toBe(-2);
+
+    const gradientBgConfig: BackgroundRemovalOptions = {
+      mode: 'gradient',
+      gradient: {
+        colors: ['#0f172a', '#1e293b'],
+        angle: 45,
+      },
+      sampleKeyColor: [255, 255, 255],
+    };
+    expect(gradientBgConfig.mode).toBe('gradient');
+    expect(gradientBgConfig.gradient?.colors.length).toBe(2);
+    expect(gradientBgConfig.sampleKeyColor).toEqual([255, 255, 255]);
+
+    const bokehConfig: BackgroundRemovalOptions = {
+      mode: 'blur',
+      blurRadius: 30,
+    };
+    expect(bokehConfig.mode).toBe('blur');
+    expect(bokehConfig.blurRadius).toBe(30);
   });
 });

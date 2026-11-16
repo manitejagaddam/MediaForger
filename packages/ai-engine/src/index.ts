@@ -16,10 +16,42 @@ export interface UpscaleOptions {
   denoise?: boolean;
 }
 
+export type BackgroundReplacementMode =
+  | 'transparent'
+  | 'color'
+  | 'gradient'
+  | 'image'
+  | 'blur';
+
+export interface BackgroundGradientConfig {
+  type?: 'linear';
+  colors: string[]; // e.g. ['#3b82f6', '#9333ea']
+  angle?: number; // 0 to 360 degrees
+}
+
+export interface SubjectShadowConfig {
+  enabled: boolean;
+  blur?: number; // 0 to 40
+  offsetX?: number; // -30 to 30
+  offsetY?: number; // -30 to 30
+  opacity?: number; // 0 to 1
+  color?: string; // e.g. '#000000'
+}
+
 export interface BackgroundRemovalOptions {
-  threshold?: number; // 0 to 100
-  featherRadius?: number; // 0 to 10
+  threshold?: number; // 1 to 100 (sensitivity)
+  featherRadius?: number; // 0 to 20 px
+  edgeShift?: number; // -10 to +10 px (choke / expand mask to eliminate fringe)
   invertMask?: boolean;
+  sampleKeyColor?: [number, number, number] | null; // Eyedropper custom color [r, g, b]
+  mode?: BackgroundReplacementMode;
+  backgroundColor?: string; // hex or rgb for solid color
+  gradient?: BackgroundGradientConfig;
+  backgroundImage?: Blob | File | null;
+  blurRadius?: number; // 0 to 40 px (bokeh portrait mode)
+  shadow?: SubjectShadowConfig;
+  outputFormat?: 'png' | 'jpeg' | 'webp';
+  outputQuality?: number; // 1 to 100
 }
 
 export interface EnhancementOptions {
@@ -63,7 +95,7 @@ export const REGISTERED_AI_MODELS: AIModelMeta[] = [
     sizeBytes: 42000000,
     downloadUrl: 'https://models.mediaforge.local/bg/rmbg-1.4.onnx',
     precision: 'fp32',
-    description: 'High-accuracy alpha matte segmentation model for instant background removal',
+    description: 'Advanced alpha matte segmentation with connected flood-fill, color clustering, and replacement studio',
   },
   {
     id: 'neural-clarity',
@@ -96,7 +128,6 @@ export class AIEngine {
    * Installs/caches a model locally with real neural weights buffer
    */
   static async installModel(model: AIModelMeta): Promise<StoredModelCacheEntry> {
-    // Generate real deterministic neural weights buffer (packed Float32 weights)
     const floatCount = Math.min(model.sizeBytes / 4, 1024 * 64);
     const weights = new Float32Array(floatCount);
     for (let i = 0; i < floatCount; i++) {
@@ -201,7 +232,6 @@ export class AIEngine {
     const data = imgData.data;
     const copy = new Uint8ClampedArray(data);
 
-    // Apply Edge-Directed High-Frequency Detail Reconstruction (Unsharp Mask + Bilateral gradient)
     const stride = targetW * 4;
     const factor = unsharpStrength * 1.5;
 
@@ -210,7 +240,6 @@ export class AIEngine {
       for (let x = 1; x < targetW - 1; x++) {
         const idx = yOffset + x * 4;
 
-        // Approximate local Laplacian across 4-neighborhood
         for (let c = 0; c < 3; c++) {
           const current = copy[idx + c];
           const top = copy[idx - stride + c];
@@ -222,10 +251,8 @@ export class AIEngine {
           const diff = current - localAvg;
 
           if (denoise && Math.abs(diff) < 4) {
-            // Smooth subtle compression artifacts in flat regions
             data[idx + c] = current - diff * 0.5;
           } else {
-            // Enhance sharp micro-details and textures
             const enhanced = current + diff * factor;
             data[idx + c] = Math.max(0, Math.min(255, enhanced));
           }
@@ -253,7 +280,7 @@ export class AIEngine {
   }
 
   /**
-   * Performs AI Background Removal via Color & Saliency Boundary Matte Segmentation
+   * Performs Advanced AI Background Removal & Replacement Studio
    */
   static async removeBackground(
     source: Blob | File,
@@ -261,116 +288,332 @@ export class AIEngine {
   ): Promise<AIProcessResult> {
     const startTime = performance.now();
     const provider = await this.resolveExecutionProvider();
-    const threshold = options.threshold ?? 45; // Color distance threshold (0-100)
-    const featherRadius = options.featherRadius ?? 2;
+
+    const threshold = options.threshold ?? 45; // 1 to 100
+    const featherRadius = options.featherRadius ?? 3; // 0 to 20 px
+    const edgeShift = options.edgeShift ?? -2; // Default -2px choke to shave background fringes
     const invertMask = options.invertMask ?? false;
+    const mode = options.mode ?? 'transparent';
+    const sampleKeyColor = options.sampleKeyColor || null;
 
     const imgBitmap = await createImageBitmap(source);
     const width = imgBitmap.width;
     const height = imgBitmap.height;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) throw new Error('Failed to create canvas context for background removal');
+    // Source Canvas
+    const srcCanvas = document.createElement('canvas');
+    srcCanvas.width = width;
+    srcCanvas.height = height;
+    const srcCtx = srcCanvas.getContext('2d', { willReadFrequently: true });
+    if (!srcCtx) throw new Error('Failed to create canvas context for source image');
+    srcCtx.drawImage(imgBitmap, 0, 0);
 
-    ctx.drawImage(imgBitmap, 0, 0);
-    const imgData = ctx.getImageData(0, 0, width, height);
-    const data = imgData.data;
+    const srcImgData = srcCtx.getImageData(0, 0, width, height);
+    const srcData = srcImgData.data;
 
-    // 1. Sample boundary pixels (corners and edges) to extract background color profiles
-    const cornerSamples: [number, number, number][] = [];
-    const sampleBorder = (x: number, y: number) => {
-      const idx = (y * width + x) * 4;
-      cornerSamples.push([data[idx], data[idx + 1], data[idx + 2]]);
+    // 1. Determine Background Color Palettes (Multi-Cluster border sampling or user eyedropper)
+    const colorClusters: [number, number, number][] = [];
+
+    if (sampleKeyColor) {
+      colorClusters.push([sampleKeyColor[0], sampleKeyColor[1], sampleKeyColor[2]]);
+    } else {
+      // Sample perimeter border pixels (top, bottom, left, right borders)
+      const borderSamples: [number, number, number][] = [];
+      const stepX = Math.max(1, Math.floor(width / 30));
+      const stepY = Math.max(1, Math.floor(height / 30));
+
+      for (let x = 0; x < width; x += stepX) {
+        const topIdx = x * 4;
+        const botIdx = ((height - 1) * width + x) * 4;
+        borderSamples.push([srcData[topIdx], srcData[topIdx + 1], srcData[topIdx + 2]]);
+        borderSamples.push([srcData[botIdx], srcData[botIdx + 1], srcData[botIdx + 2]]);
+      }
+      for (let y = 0; y < height; y += stepY) {
+        const lIdx = (y * width) * 4;
+        const rIdx = (y * width + (width - 1)) * 4;
+        borderSamples.push([srcData[lIdx], srcData[lIdx + 1], srcData[lIdx + 2]]);
+        borderSamples.push([srcData[rIdx], srcData[rIdx + 1], srcData[rIdx + 2]]);
+      }
+
+      // Group samples into up to 6 distinct color clusters
+      for (const [r, g, b] of borderSamples) {
+        let matched = false;
+        for (const cluster of colorClusters) {
+          const d = Math.sqrt(
+            (r - cluster[0]) ** 2 +
+            (g - cluster[1]) ** 2 +
+            (b - cluster[2]) ** 2
+          );
+          if (d < 35) {
+            // Update cluster centroid
+            cluster[0] = Math.round((cluster[0] + r) / 2);
+            cluster[1] = Math.round((cluster[1] + g) / 2);
+            cluster[2] = Math.round((cluster[2] + b) / 2);
+            matched = true;
+            break;
+          }
+        }
+        if (!matched && colorClusters.length < 8) {
+          colorClusters.push([r, g, b]);
+        }
+      }
+    }
+
+    // 2. Connected Boundary Flood-Fill (BFS) Matting
+    // Mask: 0 = background, 255 = foreground
+    const mask = new Uint8Array(width * height);
+    mask.fill(255); // Default everything to foreground
+
+    const visited = new Uint8Array(width * height);
+    const queue = new Int32Array(width * height);
+    let qHead = 0;
+    let qTail = 0;
+
+    // Seed BFS queue with boundary pixels
+    for (let x = 0; x < width; x++) {
+      const topP = x;
+      const botP = (height - 1) * width + x;
+      if (!visited[topP]) {
+        visited[topP] = 1;
+        queue[qTail++] = topP;
+      }
+      if (!visited[botP]) {
+        visited[botP] = 1;
+        queue[qTail++] = botP;
+      }
+    }
+    for (let y = 0; y < height; y++) {
+      const lP = y * width;
+      const rP = y * width + (width - 1);
+      if (!visited[lP]) {
+        visited[lP] = 1;
+        queue[qTail++] = lP;
+      }
+      if (!visited[rP]) {
+        visited[rP] = 1;
+        queue[qTail++] = rP;
+      }
+    }
+
+    // Perceptual color distance threshold
+    const tolDistance = (threshold / 100) * 140 + 15;
+
+    const matchesBackground = (r: number, g: number, b: number): boolean => {
+      for (const [cr, cg, cb] of colorClusters) {
+        // Weighted Euclidean color distance (favoring human perception)
+        const dist = Math.sqrt(
+          0.299 * (r - cr) ** 2 +
+          0.587 * (g - cg) ** 2 +
+          0.114 * (b - cb) ** 2
+        );
+        if (dist <= tolDistance) return true;
+      }
+      return false;
     };
 
-    // Sample top, bottom, left, right edge samples
-    for (let x = 0; x < width; x += Math.max(1, Math.floor(width / 20))) {
-      sampleBorder(x, 0);
-      sampleBorder(x, height - 1);
-    }
-    for (let y = 0; y < height; y += Math.max(1, Math.floor(height / 20))) {
-      sampleBorder(0, y);
-      sampleBorder(width - 1, y);
-    }
+    while (qHead < qTail) {
+      const p = queue[qHead++];
+      const px = p % width;
+      const py = Math.floor(p / width);
+      const idx = p * 4;
 
-    // Compute average background color
-    let avgR = 0, avgG = 0, avgB = 0;
-    for (const [r, g, b] of cornerSamples) {
-      avgR += r;
-      avgG += g;
-      avgB += b;
-    }
-    const sampleCount = cornerSamples.length || 1;
-    avgR /= sampleCount;
-    avgG /= sampleCount;
-    avgB /= sampleCount;
+      const r = srcData[idx];
+      const g = srcData[idx + 1];
+      const b = srcData[idx + 2];
 
-    // 2. Segment background based on color distance and boundary proximity
-    const colorDistThreshold = (threshold / 100) * 180;
-    const margin = Math.max(5, colorDistThreshold * 0.25);
+      if (matchesBackground(r, g, b)) {
+        mask[p] = 0; // Mark background
 
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+        // Enqueue 4-connected neighbors
+        const neighbors = [
+          py > 0 ? p - width : -1,
+          py < height - 1 ? p + width : -1,
+          px > 0 ? p - 1 : -1,
+          px < width - 1 ? p + 1 : -1,
+        ];
 
-      // Euclidean distance in RGB color space to average background
-      const dist = Math.sqrt(
-        (r - avgR) * (r - avgR) +
-        (g - avgG) * (g - avgG) +
-        (b - avgB) * (b - avgB)
-      );
-
-      let alpha = 255;
-      if (dist <= colorDistThreshold - margin) {
-        alpha = 0;
-      } else if (dist < colorDistThreshold + margin) {
-        // Feathered transition boundary
-        const t = (dist - (colorDistThreshold - margin)) / (margin * 2);
-        alpha = Math.round(t * 255);
-      }
-
-      if (invertMask) {
-        alpha = 255 - alpha;
-      }
-
-      data[i + 3] = alpha;
-    }
-
-    // 3. Optional edge feathering filter
-    if (featherRadius > 0) {
-      const alphaCopy = new Uint8ClampedArray(width * height);
-      for (let i = 0; i < width * height; i++) {
-        alphaCopy[i] = data[i * 4 + 3];
-      }
-
-      for (let y = 1; y < height - 1; y++) {
-        for (let x = 1; x < width - 1; x++) {
-          const idx = y * width + x;
-          const currentAlpha = alphaCopy[idx];
-          if (currentAlpha > 0 && currentAlpha < 255) {
-            const sum =
-              alphaCopy[idx - width] +
-              alphaCopy[idx + width] +
-              alphaCopy[idx - 1] +
-              alphaCopy[idx + 1] +
-              currentAlpha * 2;
-            data[idx * 4 + 3] = Math.round(sum / 6);
+        for (const n of neighbors) {
+          if (n !== -1 && !visited[n]) {
+            visited[n] = 1;
+            queue[qTail++] = n;
           }
         }
       }
     }
 
-    ctx.putImageData(imgData, 0, 0);
+    // Direct key-color pass for isolated background pockets (e.g. between arm and body)
+    if (sampleKeyColor) {
+      for (let p = 0; p < mask.length; p++) {
+        if (mask[p] === 255) {
+          const idx = p * 4;
+          if (matchesBackground(srcData[idx], srcData[idx + 1], srcData[idx + 2])) {
+            mask[p] = 0;
+          }
+        }
+      }
+    }
+
+    // 3. Morphological Edge Shift (Choke / Expand) to eliminate boundary fringes/halos
+    let finalMask = new Uint8Array(mask);
+    if (edgeShift < 0) {
+      // Erode foreground (Choke mask inward)
+      const radius = Math.min(10, Math.abs(edgeShift));
+      for (let y = radius; y < height - radius; y++) {
+        for (let x = radius; x < width - radius; x++) {
+          const p = y * width + x;
+          if (mask[p] === 255) {
+            let hasBgNeighbor = false;
+            for (let dy = -radius; dy <= radius && !hasBgNeighbor; dy++) {
+              for (let dx = -radius; dx <= radius; dx++) {
+                if (mask[(y + dy) * width + (x + dx)] === 0) {
+                  hasBgNeighbor = true;
+                  break;
+                }
+              }
+            }
+            if (hasBgNeighbor) {
+              finalMask[p] = 0;
+            }
+          }
+        }
+      }
+    } else if (edgeShift > 0) {
+      // Dilate foreground (Expand mask outward)
+      const radius = Math.min(10, edgeShift);
+      for (let y = radius; y < height - radius; y++) {
+        for (let x = radius; x < width - radius; x++) {
+          const p = y * width + x;
+          if (mask[p] === 0) {
+            let hasFgNeighbor = false;
+            for (let dy = -radius; dy <= radius && !hasFgNeighbor; dy++) {
+              for (let dx = -radius; dx <= radius; dx++) {
+                if (mask[(y + dy) * width + (x + dx)] === 255) {
+                  hasFgNeighbor = true;
+                  break;
+                }
+              }
+            }
+            if (hasFgNeighbor) {
+              finalMask[p] = 255;
+            }
+          }
+        }
+      }
+    }
+
+    // 4. Edge Anti-Aliasing Feathering Filter
+    const alphaMask = new Uint8ClampedArray(width * height);
+    if (featherRadius > 0) {
+      const r = Math.min(15, featherRadius);
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const p = y * width + x;
+          let sum = 0;
+          let count = 0;
+          for (let dy = -r; dy <= r; dy++) {
+            const ny = y + dy;
+            if (ny < 0 || ny >= height) continue;
+            for (let dx = -r; dx <= r; dx++) {
+              const nx = x + dx;
+              if (nx < 0 || nx >= width) continue;
+              sum += finalMask[ny * width + nx];
+              count++;
+            }
+          }
+          alphaMask[p] = Math.round(sum / count);
+        }
+      }
+    } else {
+      alphaMask.set(finalMask);
+    }
+
+    if (invertMask) {
+      for (let i = 0; i < alphaMask.length; i++) {
+        alphaMask[i] = 255 - alphaMask[i];
+      }
+    }
+
+    // 5. Create Masked Foreground Subject Canvas
+    const fgCanvas = document.createElement('canvas');
+    fgCanvas.width = width;
+    fgCanvas.height = height;
+    const fgCtx = fgCanvas.getContext('2d');
+    if (!fgCtx) throw new Error('Failed to create foreground context');
+
+    const fgImgData = fgCtx.createImageData(width, height);
+    for (let p = 0; p < width * height; p++) {
+      const idx = p * 4;
+      fgImgData.data[idx] = srcData[idx];
+      fgImgData.data[idx + 1] = srcData[idx + 1];
+      fgImgData.data[idx + 2] = srcData[idx + 2];
+      fgImgData.data[idx + 3] = alphaMask[p];
+    }
+    fgCtx.putImageData(fgImgData, 0, 0);
+
+    // 6. Background Replacement & Studio Compositing
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = width;
+    outCanvas.height = height;
+    const outCtx = outCanvas.getContext('2d');
+    if (!outCtx) throw new Error('Failed to create output context');
+
+    // Render Background Layer
+    if (mode === 'color') {
+      outCtx.fillStyle = options.backgroundColor || '#FFFFFF';
+      outCtx.fillRect(0, 0, width, height);
+    } else if (mode === 'gradient') {
+      const gradColors = options.gradient?.colors || ['#3b82f6', '#9333ea'];
+      const angle = ((options.gradient?.angle ?? 135) * Math.PI) / 180;
+      const x1 = width / 2 - (Math.cos(angle) * width) / 2;
+      const y1 = height / 2 - (Math.sin(angle) * height) / 2;
+      const x2 = width / 2 + (Math.cos(angle) * width) / 2;
+      const y2 = height / 2 + (Math.sin(angle) * height) / 2;
+
+      const grad = outCtx.createLinearGradient(x1, y1, x2, y2);
+      grad.addColorStop(0, gradColors[0]);
+      grad.addColorStop(1, gradColors[1] || gradColors[0]);
+      outCtx.fillStyle = grad;
+      outCtx.fillRect(0, 0, width, height);
+    } else if (mode === 'blur') {
+      const blurAmount = options.blurRadius ?? 25;
+      outCtx.save();
+      outCtx.filter = `blur(${blurAmount}px)`;
+      // Oversize draw to hide edge blur falloff
+      outCtx.drawImage(imgBitmap, -20, -20, width + 40, height + 40);
+      outCtx.restore();
+    } else if (mode === 'image' && options.backgroundImage) {
+      const bgBitmap = await createImageBitmap(options.backgroundImage);
+      outCtx.drawImage(bgBitmap, 0, 0, width, height);
+    }
+
+    // Optional Subject Drop Shadow
+    if (options.shadow?.enabled && mode !== 'transparent') {
+      outCtx.save();
+      outCtx.shadowColor = `rgba(0, 0, 0, ${options.shadow.opacity ?? 0.4})`;
+      outCtx.shadowBlur = options.shadow.blur ?? 20;
+      outCtx.shadowOffsetX = options.shadow.offsetX ?? 0;
+      outCtx.shadowOffsetY = options.shadow.offsetY ?? 10;
+      outCtx.drawImage(fgCanvas, 0, 0);
+      outCtx.restore();
+    }
+
+    // Composite Foreground Subject on top
+    outCtx.drawImage(fgCanvas, 0, 0);
+
+    // 7. Export Blob with requested format
+    const format = mode === 'transparent' ? 'png' : options.outputFormat || 'png';
+    const mimeType = format === 'jpeg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
+    const quality = (options.outputQuality ?? 92) / 100;
 
     const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob((b) => {
-        if (b) resolve(b);
-        else reject(new Error('Failed to generate background-removed PNG blob'));
-      }, 'image/png');
+      outCanvas.toBlob(
+        (b) => {
+          if (b) resolve(b);
+          else reject(new Error('Failed to generate output blob'));
+        },
+        mimeType,
+        quality
+      );
     });
 
     return {
@@ -415,10 +658,8 @@ export class AIEngine {
       let g = data[i + 1];
       let b = data[i + 2];
 
-      // 1. HDR Shadow lifting / tone balancing
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
       if (hdrBoost > 0) {
-        // Lift underexposed shadows smoothly
         if (lum < 128) {
           const shadowFactor = (1 - lum / 128) * hdrBoost * 40;
           r += shadowFactor;
@@ -427,7 +668,6 @@ export class AIEngine {
         }
       }
 
-      // 2. Clarity (S-curve contrast adjustment)
       if (clarity > 0) {
         const factor = 1 + clarity * 0.6;
         r = ((r / 255 - 0.5) * factor + 0.5) * 255;
@@ -435,7 +675,6 @@ export class AIEngine {
         b = ((b / 255 - 0.5) * factor + 0.5) * 255;
       }
 
-      // 3. Selective Vibrance boost (boost low-saturation pixels more than high-saturation)
       if (vibrance > 0) {
         const max = Math.max(r, g, b);
         const min = Math.min(r, g, b);

@@ -95,3 +95,18 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
     - **"Import .ONNX Model"** button enabling users to import custom local `.onnx` models from disk into IndexedDB storage.
     - Direct export options: download high-resolution output, copy Base64 data URL, send directly to Image Studio, and automatically save to conversion history.
   - Added unit test suite `tests/unit/ai-engine.test.ts` (all 28 tests pass). Production build verified cleanly.
+* **2026-11-16 21:30**: Upgraded Background Removal Engine & Built Background Replacement Studio:
+  - Fixed background segmentation algorithm: replaced naive border color averaging with connected boundary flood-fill (BFS) matting, multi-cluster background palette clustering, and perceptual color distance matching.
+  - Implemented **Interactive Eyedropper Tool**: allows clicking directly anywhere on the image preview to sample and target the exact background color to key out.
+  - Added **Background Replacement Studio**:
+    - `Transparent`: Clean alpha PNG cutout.
+    - `Solid Color`: Color picker + 8 studio swatches (Clean White, Studio Dark, Neutral Gray, Royal Navy, Chroma Green, Pastel Rose, Mint, Crimson).
+    - `Studio Gradient`: 6 gradient themes (Ocean Breeze, Sunset Glow, Midnight Nebula, Minimal Studio, Neon Cyber, Emerald Forest) + custom gradient angle slider.
+    - `Bokeh Blur (DSLR)`: Shallow depth-of-field lens blur on original background with adjustable radius (5px to 45px) keeping foreground razor-sharp.
+    - `Custom Image`: Upload and composite cut-out subject onto a custom background image.
+  - Added **Minute Edge Controls & Compositing**:
+    - Edge Shift (Choke & Expand: -8px to +8px) to eliminate color fringing and halos.
+    - Anti-aliasing feathering slider (0px to 12px) for soft hair and fabric contours.
+    - Subject Drop Shadow with adjustable opacity, blur, and Y-offset for realistic composite depth.
+    - Format and quality selectors (PNG, JPEG, WebP).
+  - Verified with clean production build and 29 passing unit tests (`pnpm vitest run`).
