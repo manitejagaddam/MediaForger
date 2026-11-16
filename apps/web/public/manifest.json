@@ -1,0 +1,17 @@
+{
+  "name": "MediaForge — Universal Local Media Studio",
+  "short_name": "MediaForge",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "description": "Universal privacy-first local media conversion and processing directly on your device",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

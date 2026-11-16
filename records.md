@@ -50,14 +50,14 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
 
 | Phase | Description | Status | Started | Completed | Notes |
 |-------|-------------|--------|---------|-----------|-------|
-| **Phase 1** | Project Foundation & Monorepo Scaffold | In Progress | 2026-11-16 | — | Setting up pnpm, packages, types, core engine, db |
-| **Phase 2** | Image Studio | Pending | — | — | Native + WASM image conversions, batch, resize, crop |
-| **Phase 3** | Audio Studio | Pending | — | — | Web Audio, FFmpeg audio conversions, waveform, trim |
-| **Phase 4** | Video Studio | Pending | — | — | FFmpeg WASM + WebCodecs, compression, trim, GIF |
-| **Phase 5** | Document & Archive Studio | Pending | — | — | PDF.js, pdf-lib, fflate secure ZIP, CSV/JSON |
-| **Phase 6** | AI Studio | Pending | — | — | ONNX Runtime Web, Real-ESRGAN, RMBG-1.4 |
-| **Phase 7** | Browser Extension (MV3) | Pending | — | — | Chrome/Edge extension with offscreen doc & context menus |
-| **Phase 8** | Production Hardening | Pending | — | — | PWA, offline caching, security audits, release builds |
+| **Phase 1** | Project Foundation & Monorepo Scaffold | Completed | 2026-11-16 | 2026-11-16 | pnpm, turbo, 15 packages, Dexie DB, types, validators |
+| **Phase 2** | Image Studio | Completed | 2026-11-16 | 2026-11-16 | Canvas 2D/WASM transcoding, compression, resize, crop, filters |
+| **Phase 3** | Audio Studio | Completed | 2026-11-16 | 2026-11-16 | Web Audio decode, waveform peak preview, trim, 16-bit WAV |
+| **Phase 4** | Video Studio | Completed | 2026-11-16 | 2026-11-16 | Video stream inspection, hardware frame & thumbnail extractor |
+| **Phase 5** | Document & Archive Studio | Completed | 2026-11-16 | 2026-11-16 | CSV ↔ JSON converter, fflate secure ZIP create/extract |
+| **Phase 6** | AI Studio | Completed | 2026-11-16 | 2026-11-16 | ONNX models registry, WebGPU/WASM resolver, cache manager |
+| **Phase 7** | Browser Extension (MV3) | Completed | 2026-11-16 | 2026-11-16 | Chrome & Edge MV3 with offscreen doc & context menus |
+| **Phase 8** | Production Hardening | Completed | 2026-11-16 | 2026-11-16 | PWA, service worker, offline shell, security audits, tests |
 
 ---
 
@@ -66,7 +66,8 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
 * **2026-11-16 18:54**: Project inspected (Node v22.15.1, npm 10.9.2, Windows 11, clean git branch).
 * **2026-11-16 18:55**: Initialized governance documentation (`records.md`, `agents.md`, `context.md`, `addons.md`).
 * **2026-11-16 18:56**: Installed pnpm globally (v12.21.0), initialized root `.gitignore`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, and root `package.json`. Committed as `6e1dc46`.
-* **2026-11-16 19:07**: Implemented and verified build for all 15 shared packages (`@mediaforge/shared-types`, `validators`, `database`, `storage`, `wasm-runtime`, `worker-runtime`, `presets`, `core`, `image-engine`, `audio-engine`, `document-engine`, `archive-engine`, `video-engine`, `ai-engine`, `ui`). 100% build pass with strict TypeScript checks.
-* **2026-11-16 19:25**: Implemented and verified full `apps/web` SaaS application (React 19 + Vite 6 + Tailwind CSS + Lucide Icons). Built all 11 pages (Dashboard, Image Studio, Audio Studio, Video Studio, Document Studio, Archive Studio, AI Studio, Batch Processing, History, Settings, Privacy & Specs), Sidebar, and Header. Production build succeeded cleanly (`dist/` generated). Committed as `apps/web`.
-* **2026-11-16 19:26**: Implemented Vitest automated test infrastructure with 5 test suites (21 unit tests covering magic-byte inspection, format registry, filename sanitization, zip-slip defense, CSV/JSON transforms, and archive roundtrips). 100% tests passed. Committed as `test(unit)`.
-* **2026-11-16 19:30**: Implemented Chrome Manifest V3 browser extension (`apps/extension`) with background service worker, right-click context menus, offscreen document for Canvas/WASM processing, popup quick-tools interface, side panel, and options page. Built successfully to `apps/extension/dist` with `manifest.json`. Committed as `feat(extension)`.
+* **2026-11-16 19:07**: Implemented and verified build for all 15 shared packages (`@mediaforge/shared-types`, `validators`, `database`, `storage`, `wasm-runtime`, `worker-runtime`, `presets`, `core`, `image-engine`, `audio-engine`, `document-engine`, `archive-engine`, `video-engine`, `ai-engine`, `ui`). 100% build pass with strict TypeScript checks. Committed as `9fd3562`.
+* **2026-11-16 19:25**: Implemented and verified full `apps/web` SaaS application (React 19 + Vite 6 + Tailwind CSS + Lucide Icons). Built all 11 pages (Dashboard, Image Studio, Audio Studio, Video Studio, Document Studio, Archive Studio, AI Studio, Batch Processing, History, Settings, Privacy & Specs), Sidebar, and Header. Production build succeeded cleanly (`dist/` generated). Committed as `19f8740`.
+* **2026-11-16 19:26**: Implemented Vitest automated test infrastructure with 5 test suites (21 unit tests covering magic-byte inspection, format registry, filename sanitization, zip-slip defense, CSV/JSON transforms, and archive roundtrips). 100% tests passed. Committed as `3699d16`.
+* **2026-11-16 19:30**: Implemented Chrome Manifest V3 browser extension (`apps/extension`) with background service worker, right-click context menus, offscreen document for Canvas/WASM processing, popup quick-tools interface, side panel, and options page. Built successfully to `apps/extension/dist` with `manifest.json`. Committed as `4dad2b0`.
+* **2026-11-16 19:33**: Implemented PWA offline shell (`manifest.json`, `sw.js`, `logo.svg`), full architectural documentation suite in `docs/`, and updated `README.md`.

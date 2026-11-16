@@ -8,3 +8,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>
 );
+
+// Register PWA service worker for offline support
+if ('serviceWorker' in navigator && !window.location.host.includes('localhost:')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
