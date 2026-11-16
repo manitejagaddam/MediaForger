@@ -48,6 +48,9 @@ export interface StoredModelCacheEntry {
   downloadedAt: number;
   precision: 'fp16' | 'fp32';
   cacheKey: string;
+  task?: 'upscale' | 'background-removal' | 'enhancement' | 'custom';
+  modelBuffer?: ArrayBuffer;
+  isCustom?: boolean;
 }
 
 export class MediaForgeDatabase extends Dexie {

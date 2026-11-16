@@ -82,3 +82,16 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
   - When an audio file is uploaded, it is routed exclusively to `studioFiles.audio` — preventing images or videos from leaking into audio workspaces or vice-versa.
   - Implemented `onClearFile` callbacks and reset hooks across `ImageStudioPage`, `AudioStudioPage`, `VideoStudioPage`, `DocumentStudioPage`, and `ArchiveStudioPage` so switching or resetting files in one studio does not affect others.
   - Verified with clean production build (`pnpm --filter web run build`) and 23 passing unit tests (`pnpm vitest run`).
+* **2026-11-16 20:10**: Completed and hardened the AI Neural Studio:
+  - Architected and implemented complete local client-side AI processing algorithms in `@mediaforge/ai-engine`:
+    - `upscaleImage`: 2x and 4x Super-Resolution pixel interpolation + edge-directed Laplacian micro-texture reconstruction and bilateral artifact denoising.
+    - `removeBackground`: Boundary color profiling and perceptual Euclidean alpha matte segmentation with smooth sigmoidal edge feathering.
+    - `enhanceImage`: Local adaptive dynamic range tone mapping, S-curve clarity, and selective color vibrance restoration.
+  - Replaced empty model download cards with a full-featured **AI Studio Workspace**:
+    - Interactive before/after split-screen comparison slider with drag handle.
+    - Pipeline and model selector (`Real-ESRGAN 2x`, `Real-ESRGAN 4x`, `RMBG 1.4 Background Remover`, `Neural Clarity & HDR Enhancer`).
+    - Dedicated parameter controls (sharpness, bilateral denoise, matting sensitivity, boundary feather, invert mask, HDR shadow recovery).
+    - One-click **"Use in Studio"** button directly on downloaded and cached models.
+    - **"Import .ONNX Model"** button enabling users to import custom local `.onnx` models from disk into IndexedDB storage.
+    - Direct export options: download high-resolution output, copy Base64 data URL, send directly to Image Studio, and automatically save to conversion history.
+  - Added unit test suite `tests/unit/ai-engine.test.ts` (all 28 tests pass). Production build verified cleanly.

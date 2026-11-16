@@ -23,12 +23,14 @@ export const App: React.FC = () => {
     video: File | null;
     document: File | null;
     archive: File | null;
+    ai: File | null;
   }>({
     image: null,
     audio: null,
     video: null,
     document: null,
     archive: null,
+    ai: null,
   });
   const [storageUsageMb, setStorageUsageMb] = useState<number>(0);
 
@@ -50,7 +52,9 @@ export const App: React.FC = () => {
     setActivePage(targetStudio);
   };
 
-  const handleClearStudioFile = (studio: 'image' | 'audio' | 'video' | 'document' | 'archive') => {
+  const handleClearStudioFile = (
+    studio: 'image' | 'audio' | 'video' | 'document' | 'archive' | 'ai'
+  ) => {
     setStudioFiles((prev) => ({
       ...prev,
       [studio]: null,
@@ -102,7 +106,13 @@ export const App: React.FC = () => {
           />
         );
       case 'ai':
-        return <AiStudioPage />;
+        return (
+          <AiStudioPage
+            initialFile={studioFiles.ai}
+            onClearFile={() => handleClearStudioFile('ai')}
+            onSendToImageStudio={(file) => handleSelectFile(file, 'image')}
+          />
+        );
       case 'batch':
         return <BatchStudioPage />;
       case 'history':
