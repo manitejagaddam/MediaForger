@@ -110,3 +110,10 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
     - Subject Drop Shadow with adjustable opacity, blur, and Y-offset for realistic composite depth.
     - Format and quality selectors (PNG, JPEG, WebP).
   - Verified with clean production build and 29 passing unit tests (`pnpm vitest run`).
+* **2026-11-16 23:30**: Integrated Deep Learning IS-Net Neural Segmentation via ONNX Runtime Web:
+  - Identified root cause of portrait blurring: naive boundary flood fill seeded the bottom border as background, causing the person's suit and torso to be classified as background.
+  - Integrated `@imgly/background-removal` (IS-Net deep neural network) executing directly in WebAssembly (`ort-wasm-simd-threaded.jsep.wasm`) and WebGPU.
+  - The deep neural network identifies people, clothing, hair, objects, and complex backgrounds (office interiors, furniture, foliage, outdoor scenery) with semantic accuracy.
+  - Implemented refined multi-stage pipeline: IS-Net neural mask extraction -> edge shift & feathering -> studio background replacement (Transparent, Solid Color, Gradient, Bokeh Blur, Custom Image).
+  - Fixed portrait blur: In Bokeh Blur mode, the background is softly blurred while the neural cutout of the subject is rendered 100% crystal-sharp on top.
+  - Verified Vite bundling of ONNX Runtime Web WebAssembly assets (`dist/assets/ort-wasm-simd-threaded.jsep*.wasm`) and 29 passing Vitest tests.

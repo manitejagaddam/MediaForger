@@ -20,7 +20,8 @@ This document tracks all pluggable engines, WebAssembly codecs, AI model weights
 | **pdf-lib** | Documents | TypeScript / JS | `pdf-lib` | MIT | Level 2 |
 | **PDF.js** | Documents | WebAssembly / JS | `pdfjs-dist` | Apache-2.0 | Level 2 |
 | **fflate** | Archives | JavaScript / Uint8Array | `fflate` | MIT | Level 2 |
-| **ONNX Runtime Web** | AI Inference | WebGPU / WASM | `onnxruntime-web` | MIT | Level 3 |
+| **IS-Net / U2Net ONNX Engine** | Background Removal | ONNX WebGPU / WASM | `@imgly/background-removal` | MIT | Level 3 |
+| **ONNX Runtime Web** | AI Inference | WebGPU / WASM SIMD | `onnxruntime-web` | MIT | Level 3 |
 
 ---
 
