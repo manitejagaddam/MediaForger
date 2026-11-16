@@ -26,9 +26,10 @@ import { db } from '@mediaforge/database';
 
 interface ImageStudioPageProps {
   initialFile?: File | null;
+  onClearFile?: () => void;
 }
 
-export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile }) => {
+export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, onClearFile }) => {
   const [file, setFile] = useState<File | null>(initialFile || null);
   const [inspection, setInspection] = useState<InspectionResult | null>(null);
   const [inputUrl, setInputUrl] = useState<string | null>(null);
@@ -59,6 +60,9 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile })
   useEffect(() => {
     if (initialFile) {
       handleFileSelected(initialFile);
+    } else {
+      setFile(null);
+      setOutputResult(null);
     }
   }, [initialFile]);
 
@@ -259,6 +263,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile })
                     onClick={() => {
                       setFile(null);
                       setOutputResult(null);
+                      onClearFile?.();
                     }}
                     className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
                   >

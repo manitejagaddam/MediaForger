@@ -16,9 +16,10 @@ import { db } from '@mediaforge/database';
 
 interface ArchiveStudioPageProps {
   initialFile?: File | null;
+  onClearFile?: () => void;
 }
 
-export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFile }) => {
+export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFile, onClearFile }) => {
   const [activeTab, setActiveTab] = useState<'create' | 'extract'>('create');
 
   // Create ZIP state
@@ -45,6 +46,11 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
         setActiveTab('create');
         setFilesToZip([{ name: initialFile.name, file: initialFile }]);
       }
+    } else {
+      setFilesToZip([]);
+      setZipToExtract(null);
+      setExtractedEntries([]);
+      setCreatedZipBlob(null);
     }
   }, [initialFile]);
 
@@ -323,7 +329,11 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                 </div>
 
                 <button
-                  onClick={() => setZipToExtract(null)}
+                  onClick={() => {
+                    setZipToExtract(null);
+                    setExtractedEntries([]);
+                    onClearFile?.();
+                  }}
                   className="px-3 py-1.5 rounded-lg bg-gray-800 text-xs text-gray-400 hover:text-white"
                 >
                   Close Archive

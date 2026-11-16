@@ -26,9 +26,10 @@ import { db } from '@mediaforge/database';
 
 interface VideoStudioPageProps {
   initialFile?: File | null;
+  onClearFile?: () => void;
 }
 
-export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile }) => {
+export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, onClearFile }) => {
   const [file, setFile] = useState<File | null>(initialFile || null);
   const [inspection, setInspection] = useState<InspectionResult | null>(null);
   const [videoMeta, setVideoMeta] = useState<VideoMetadata | null>(null);
@@ -53,6 +54,19 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile })
   useEffect(() => {
     if (initialFile) {
       handleFileSelected(initialFile);
+    } else {
+      setFile(null);
+      setCapturedThumbBlob(null);
+      setVideoMeta(null);
+      setInspection(null);
+      if (videoUrl) {
+        ObjectUrlManager.revoke(videoUrl);
+        setVideoUrl(null);
+      }
+      if (thumbUrl) {
+        ObjectUrlManager.revoke(thumbUrl);
+        setThumbUrl(null);
+      }
     }
   }, [initialFile]);
 
@@ -225,6 +239,15 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile })
                   onClick={() => {
                     setFile(null);
                     setCapturedThumbBlob(null);
+                    if (videoUrl) {
+                      ObjectUrlManager.revoke(videoUrl);
+                      setVideoUrl(null);
+                    }
+                    if (thumbUrl) {
+                      ObjectUrlManager.revoke(thumbUrl);
+                      setThumbUrl(null);
+                    }
+                    onClearFile?.();
                   }}
                   className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
                 >

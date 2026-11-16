@@ -17,7 +17,19 @@ import { getStorageQuota } from '@mediaforge/storage';
 
 export const App: React.FC = () => {
   const [activePage, setActivePage] = useState<PageId>('dashboard');
-  const [activeFile, setActiveFile] = useState<File | null>(null);
+  const [studioFiles, setStudioFiles] = useState<{
+    image: File | null;
+    audio: File | null;
+    video: File | null;
+    document: File | null;
+    archive: File | null;
+  }>({
+    image: null,
+    audio: null,
+    video: null,
+    document: null,
+    archive: null,
+  });
   const [storageUsageMb, setStorageUsageMb] = useState<number>(0);
 
   useEffect(() => {
@@ -28,8 +40,21 @@ export const App: React.FC = () => {
   }, [activePage]);
 
   const handleSelectFile = (file: File, targetStudio: PageId) => {
-    setActiveFile(file);
+    // Isolate file strictly to the corresponding target studio
+    if (targetStudio in studioFiles) {
+      setStudioFiles((prev) => ({
+        ...prev,
+        [targetStudio]: file,
+      }));
+    }
     setActivePage(targetStudio);
+  };
+
+  const handleClearStudioFile = (studio: 'image' | 'audio' | 'video' | 'document' | 'archive') => {
+    setStudioFiles((prev) => ({
+      ...prev,
+      [studio]: null,
+    }));
   };
 
   const renderActivePage = () => {
@@ -42,15 +67,40 @@ export const App: React.FC = () => {
           />
         );
       case 'image':
-        return <ImageStudioPage initialFile={activeFile} />;
+        return (
+          <ImageStudioPage
+            initialFile={studioFiles.image}
+            onClearFile={() => handleClearStudioFile('image')}
+          />
+        );
       case 'audio':
-        return <AudioStudioPage initialFile={activeFile} />;
+        return (
+          <AudioStudioPage
+            initialFile={studioFiles.audio}
+            onClearFile={() => handleClearStudioFile('audio')}
+          />
+        );
       case 'video':
-        return <VideoStudioPage initialFile={activeFile} />;
+        return (
+          <VideoStudioPage
+            initialFile={studioFiles.video}
+            onClearFile={() => handleClearStudioFile('video')}
+          />
+        );
       case 'document':
-        return <DocumentStudioPage initialFile={activeFile} />;
+        return (
+          <DocumentStudioPage
+            initialFile={studioFiles.document}
+            onClearFile={() => handleClearStudioFile('document')}
+          />
+        );
       case 'archive':
-        return <ArchiveStudioPage initialFile={activeFile} />;
+        return (
+          <ArchiveStudioPage
+            initialFile={studioFiles.archive}
+            onClearFile={() => handleClearStudioFile('archive')}
+          />
+        );
       case 'ai':
         return <AiStudioPage />;
       case 'batch':

@@ -24,9 +24,10 @@ import { db } from '@mediaforge/database';
 
 interface AudioStudioPageProps {
   initialFile?: File | null;
+  onClearFile?: () => void;
 }
 
-export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile }) => {
+export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, onClearFile }) => {
   const [file, setFile] = useState<File | null>(initialFile || null);
   const [inspection, setInspection] = useState<InspectionResult | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
@@ -56,6 +57,10 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile })
   useEffect(() => {
     if (initialFile) {
       handleFileSelected(initialFile);
+    } else {
+      setFile(null);
+      setAudioBuffer(null);
+      setOutputResult(null);
     }
   }, [initialFile]);
 
@@ -262,6 +267,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile })
                     setFile(null);
                     setAudioBuffer(null);
                     setOutputResult(null);
+                    onClearFile?.();
                   }}
                   className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
                 >

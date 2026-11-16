@@ -76,3 +76,9 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
   2. **Audio & Video Playback Controls**: Added fast forward (+5s, +10s), rewind (-5s, -10s), interactive timeline scrubbers, playback speed controls (0.5x, 1x, 1.25x, 1.5x, 2x), interactive waveform click-to-seek, and video frame-by-frame stepping.
   3. **Multi-Format Audio Conversion**: Integrated LAME MP3 Encoder (`@breezystack/lamejs`), supporting real client-side MP3 and WAV export with bitrate selection (128–320 kbps) and dynamic format-specific downloads. Added automated unit tests in `tests/unit/audio-engine.test.ts` (all 23 tests pass).
 * **2026-11-16 19:55**: Pushed all 9 atomic commits to GitHub remote repository (`https://github.com/manitejagaddam/MediaForger.git`) on branch `main`. Synced and verified.
+* **2026-11-16 20:03**: Fixed studio file isolation and state containment:
+  - Replaced global `activeFile` state with discrete, per-studio scoped file state dictionary (`studioFiles: { image, audio, video, document, archive }`) in `apps/web/src/App.tsx`.
+  - When an image is uploaded, it is routed exclusively to `studioFiles.image` — other studios remain clean and empty.
+  - When an audio file is uploaded, it is routed exclusively to `studioFiles.audio` — preventing images or videos from leaking into audio workspaces or vice-versa.
+  - Implemented `onClearFile` callbacks and reset hooks across `ImageStudioPage`, `AudioStudioPage`, `VideoStudioPage`, `DocumentStudioPage`, and `ArchiveStudioPage` so switching or resetting files in one studio does not affect others.
+  - Verified with clean production build (`pnpm --filter web run build`) and 23 passing unit tests (`pnpm vitest run`).

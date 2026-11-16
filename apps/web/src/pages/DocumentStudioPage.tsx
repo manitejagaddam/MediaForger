@@ -16,9 +16,10 @@ import { db } from '@mediaforge/database';
 
 interface DocumentStudioPageProps {
   initialFile?: File | null;
+  onClearFile?: () => void;
 }
 
-export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialFile }) => {
+export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialFile, onClearFile }) => {
   const [file, setFile] = useState<File | null>(initialFile || null);
   const [inspection, setInspection] = useState<InspectionResult | null>(null);
   const [inputContent, setInputContent] = useState<string>('');
@@ -35,6 +36,12 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
   React.useEffect(() => {
     if (initialFile) {
       handleFileSelected(initialFile);
+    } else {
+      setFile(null);
+      setOutputBlob(null);
+      setOutputContent('');
+      setInputContent('');
+      setInspection(null);
     }
   }, [initialFile]);
 
@@ -151,6 +158,9 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
                     setFile(null);
                     setOutputBlob(null);
                     setOutputContent('');
+                    setInputContent('');
+                    setInspection(null);
+                    onClearFile?.();
                   }}
                   className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
                 >
