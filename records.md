@@ -65,3 +65,5 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
 
 * **2026-11-16 18:54**: Project inspected (Node v22.15.1, npm 10.9.2, Windows 11, clean git branch).
 * **2026-11-16 18:55**: Initialized governance documentation (`records.md`, `agents.md`, `context.md`, `addons.md`).
+* **2026-11-16 18:56**: Installed pnpm globally (v12.21.0), initialized root `.gitignore`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, and root `package.json`. Committed as `6e1dc46`.
+* **2026-11-16 19:07**: Implemented and verified build for all 15 shared packages (`@mediaforge/shared-types`, `validators`, `database`, `storage`, `wasm-runtime`, `worker-runtime`, `presets`, `core`, `image-engine`, `audio-engine`, `document-engine`, `archive-engine`, `video-engine`, `ai-engine`, `ui`). 100% build pass with strict TypeScript checks.
