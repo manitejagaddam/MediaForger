@@ -51,3 +51,4 @@ When right-clicking any webpage image:
 6. Select the directory:
    `c:\Users\manit\OneDrive\Desktop\Projects\Self\Media Forger\apps\extension\dist`
 7. Click the extension icon in your toolbar to open the quick-tools popup!
+

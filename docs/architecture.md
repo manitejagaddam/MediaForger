@@ -61,3 +61,4 @@ To guarantee a fluid 60 FPS user experience:
 1. All CPU-intensive transcoding, resizing, audio rendering, and compression run inside dedicated Web Workers.
 2. Large buffers are passed across the boundary using `Transferable` ArrayBuffers where possible to eliminate buffer duplication.
 3. High-throughput files leverage the Origin Private File System (OPFS) for direct file streaming without exceeding V8 heap limits.
+

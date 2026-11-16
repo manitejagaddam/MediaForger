@@ -30,3 +30,4 @@ describe('ArchiveEngine Security', () => {
     await expect(ArchiveEngine.createZip(files)).rejects.toThrow(/Insecure archive path/);
   });
 });
+

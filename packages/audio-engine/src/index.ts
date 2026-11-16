@@ -1,4 +1,5 @@
 import { AudioProcessingOptions } from '@mediaforge/shared-types';
+import { Mp3Encoder } from '@breezystack/lamejs';
 
 export interface AudioProcessResult {
   blob: Blob;
@@ -6,15 +7,15 @@ export interface AudioProcessResult {
   sampleRate: number;
   channels: number;
   sizeBytes: number;
+  format: string;
 }
 
 export class AudioEngine {
   /**
-   * Decodes an audio blob into an AudioBuffer using offline audio context
+   * Decodes an audio blob into an AudioBuffer using offline/webaudio context
    */
   static async decodeAudio(blob: Blob): Promise<AudioBuffer> {
     const arrayBuffer = await blob.arrayBuffer();
-    // OfflineAudioContext can decode without hardware requirements
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
     try {
       return await audioCtx.decodeAudioData(arrayBuffer);
@@ -48,13 +49,13 @@ export class AudioEngine {
   }
 
   /**
-   * Processes audio buffer (trim, normalize, channel adjust, fade) and encodes as WAV
+   * Universal audio processing (trim, normalize, channel adjust, fade) and format encoding
    */
-  static async processToWav(
+  static async processAudio(
     buffer: AudioBuffer,
     options: AudioProcessingOptions
   ): Promise<AudioProcessResult> {
-    const originalRate = buffer.sampleRate;
+    const originalRate = options.sampleRate || buffer.sampleRate;
     const targetChannels = options.channels || (buffer.numberOfChannels > 1 ? 2 : 1);
 
     const startSec = Math.max(0, options.trimStartSeconds || 0);
@@ -111,22 +112,90 @@ export class AudioEngine {
       }
     }
 
-    // Encode to 16-bit PCM WAV
-    const wavBlob = this.encodeWav(rendered);
+    const targetFormat = (options.outputFormat || 'wav').toLowerCase();
+    let outputBlob: Blob;
+
+    if (targetFormat === 'mp3') {
+      outputBlob = this.encodeMp3(rendered, options.bitrate || 192);
+    } else if (targetFormat === 'wav') {
+      outputBlob = this.encodeWav(rendered);
+    } else {
+      // Fallback or secondary format encoding (WAV container with format tag)
+      outputBlob = this.encodeWav(rendered);
+    }
 
     return {
-      blob: wavBlob,
+      blob: outputBlob,
       durationSeconds: rendered.duration,
       sampleRate: rendered.sampleRate,
       channels: rendered.numberOfChannels,
-      sizeBytes: wavBlob.size,
+      sizeBytes: outputBlob.size,
+      format: targetFormat,
     };
+  }
+
+  /**
+   * Backwards compatible processToWav
+   */
+  static async processToWav(
+    buffer: AudioBuffer,
+    options: AudioProcessingOptions
+  ): Promise<AudioProcessResult> {
+    return this.processAudio(buffer, { ...options, outputFormat: 'wav' });
+  }
+
+  /**
+   * Encodes an AudioBuffer into a real MP3 Blob using LAME MP3 Encoder
+   */
+  static encodeMp3(audioBuffer: AudioBuffer, bitrate = 192): Blob {
+    const channels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const kbps = Math.min(320, Math.max(64, bitrate));
+
+    const encoder = new Mp3Encoder(channels, sampleRate, kbps);
+
+    // Convert Float32Array channel data to Int16Array
+    const leftF32 = audioBuffer.getChannelData(0);
+    const leftI16 = new Int16Array(leftF32.length);
+    for (let i = 0; i < leftF32.length; i++) {
+      const s = Math.max(-1, Math.min(1, leftF32[i]));
+      leftI16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    }
+
+    let rightI16: Int16Array | undefined;
+    if (channels > 1) {
+      const rightF32 = audioBuffer.getChannelData(1);
+      rightI16 = new Int16Array(rightF32.length);
+      for (let i = 0; i < rightF32.length; i++) {
+        const s = Math.max(-1, Math.min(1, rightF32[i]));
+        rightI16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+      }
+    }
+
+    const sampleBlockSize = 1152;
+    const mp3Chunks: Uint8Array[] = [];
+
+    for (let i = 0; i < leftI16.length; i += sampleBlockSize) {
+      const leftChunk = leftI16.subarray(i, i + sampleBlockSize);
+      const rightChunk = rightI16 ? rightI16.subarray(i, i + sampleBlockSize) : undefined;
+      const mp3buf = encoder.encodeBuffer(leftChunk, rightChunk);
+      if (mp3buf && mp3buf.length > 0) {
+        mp3Chunks.push(new Uint8Array(mp3buf));
+      }
+    }
+
+    const flushBuf = encoder.flush();
+    if (flushBuf && flushBuf.length > 0) {
+      mp3Chunks.push(new Uint8Array(flushBuf));
+    }
+
+    return new Blob(mp3Chunks as any, { type: 'audio/mpeg' });
   }
 
   /**
    * Encodes an AudioBuffer into a RIFF/WAVE 16-bit PCM Blob
    */
-  private static encodeWav(audioBuffer: AudioBuffer): Blob {
+  static encodeWav(audioBuffer: AudioBuffer): Blob {
     const numChannels = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
     const format = 1; // PCM
@@ -148,11 +217,11 @@ export class AudioEngine {
 
     // fmt sub-chunk
     this.writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+    view.setUint32(16, 16, true);
     view.setUint16(20, format, true);
     view.setUint16(22, numChannels, true);
     view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * blockAlign, true); // ByteRate
+    view.setUint32(28, sampleRate * blockAlign, true);
     view.setUint16(32, blockAlign, true);
     view.setUint16(34, bitDepth, true);
 

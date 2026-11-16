@@ -28,3 +28,4 @@ All persistent data is stored strictly on the user's device:
 * **Origin Private File System (OPFS)**: Stores temporary media buffers during active conversion jobs.
 * **Cache Storage**: Stores compiled WebAssembly modules for offline operation.
 * **User Control**: Users can inspect storage consumption and purge all stored data with one click from the **Settings** page.
+

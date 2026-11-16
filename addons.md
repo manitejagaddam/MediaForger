@@ -11,6 +11,7 @@ This document tracks all pluggable engines, WebAssembly codecs, AI model weights
 | **Canvas 2D / Offscreen** | Image | Browser Native | Native browser runtime | Built-in | Level 1 |
 | **WebCodecs** | Video/Audio | Browser Native | Native browser runtime | Built-in | Level 1 |
 | **Web Audio API** | Audio | Browser Native | Native browser runtime | Built-in | Level 1 |
+| **LAME MP3 Encoder** | Audio | Pure JS / WASM | `@breezystack/lamejs` | LGPL-3.0 | Level 2 |
 | **jSquash AVIF** | Image | WebAssembly | `@jsquash/avif` | Apache-2.0 | Level 2 |
 | **jSquash WebP** | Image | WebAssembly | `@jsquash/webp` | Apache-2.0 | Level 2 |
 | **jSquash JPEG** | Image | WebAssembly | `@jsquash/jpeg` | Apache-2.0 | Level 2 |
@@ -60,3 +61,4 @@ All AI models run 100% locally on-device via ONNX Runtime Web. Models are downlo
 * **Ultra Compressed Mobile**: MP4, 720p, CRF 28, 30 FPS
 * **High Quality GIF**: 480p, 15 FPS, Floyd-Steinberg dithering with optimized palette
 * **Audio-Only Extraction**: MP3 192 kbps extracted directly from video stream
+

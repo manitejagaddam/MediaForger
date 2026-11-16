@@ -132,3 +132,4 @@ export const AboutPage: React.FC = () => {
     </div>
   );
 };
+

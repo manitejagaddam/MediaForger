@@ -19,3 +19,4 @@ export const THEME_COLORS = {
   warning: '#F59E0B',
   error: '#EF4444',
 };
+

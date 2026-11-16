@@ -175,3 +175,4 @@ export function verifyMagicBytes(header: Uint8Array, format: string): boolean {
   }
   return false;
 }
+

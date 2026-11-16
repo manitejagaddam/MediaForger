@@ -345,3 +345,4 @@ export class FormatRegistry {
     return Array.from(this.formats.values());
   }
 }
+

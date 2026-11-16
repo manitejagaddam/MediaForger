@@ -90,3 +90,4 @@ export class MediaForgeDatabase extends Dexie {
 }
 
 export const db = new MediaForgeDatabase();
+

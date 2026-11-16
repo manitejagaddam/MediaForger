@@ -35,3 +35,4 @@ describe('FileInspector', () => {
     expect(result.category).toBe('document');
   });
 });
+

@@ -38,3 +38,4 @@ describe('FormatRegistry', () => {
     expect(audioFormats.some((f) => f.id === 'wav')).toBe(true);
   });
 });
+

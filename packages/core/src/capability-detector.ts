@@ -46,3 +46,4 @@ export class CapabilityDetector {
     return this.cachedCapabilities;
   }
 }
+

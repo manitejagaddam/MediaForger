@@ -8,9 +8,13 @@ import {
   Sliders,
   Sparkles,
   Volume2,
+  VolumeX,
   RefreshCw,
   Clock,
-  AudioWaveform,
+  FastForward,
+  Rewind,
+  RotateCcw,
+  RotateCw,
 } from 'lucide-react';
 import { AudioEngine, AudioProcessResult } from '@mediaforge/audio-engine';
 import { FileInspector, ExportManager } from '@mediaforge/core';
@@ -18,18 +22,27 @@ import { AudioProcessingOptions, InspectionResult } from '@mediaforge/shared-typ
 import { ObjectUrlManager } from '@mediaforge/storage';
 import { db } from '@mediaforge/database';
 
-export const AudioStudioPage: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
+interface AudioStudioPageProps {
+  initialFile?: File | null;
+}
+
+export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile }) => {
+  const [file, setFile] = useState<File | null>(initialFile || null);
   const [inspection, setInspection] = useState<InspectionResult | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [peaks, setPeaks] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState<number>(1.0);
+  const [volume, setVolume] = useState<number>(1.0);
+  const [isMuted, setIsMuted] = useState(false);
   const [outputResult, setOutputResult] = useState<AudioProcessResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Audio options
-  const [outputFormat, setOutputFormat] = useState('wav');
+  const [outputFormat, setOutputFormat] = useState('mp3');
+  const [bitrate, setBitrate] = useState<number>(192);
   const [channels, setChannels] = useState<1 | 2>(2);
   const [trimStart, setTrimStart] = useState<number>(0);
   const [trimEnd, setTrimEnd] = useState<number>(0);
@@ -39,6 +52,12 @@ export const AudioStudioPage: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (initialFile) {
+      handleFileSelected(initialFile);
+    }
+  }, [initialFile]);
 
   useEffect(() => {
     return () => {
@@ -59,15 +78,18 @@ export const AudioStudioPage: React.FC = () => {
     try {
       const buffer = await AudioEngine.decodeAudio(selectedFile);
       setAudioBuffer(buffer);
-      setTrimEnd(Math.round(buffer.duration));
+      setDuration(buffer.duration);
+      setTrimEnd(Number(buffer.duration.toFixed(2)));
       setChannels(buffer.numberOfChannels > 1 ? 2 : 1);
 
-      const generatedPeaks = AudioEngine.generateWaveformPeaks(buffer, 80);
+      const generatedPeaks = AudioEngine.generateWaveformPeaks(buffer, 100);
       setPeaks(generatedPeaks);
 
       const url = ObjectUrlManager.create(selectedFile);
       if (audioRef.current) {
         audioRef.current.src = url;
+        audioRef.current.playbackRate = playbackRate;
+        audioRef.current.volume = isMuted ? 0 : volume;
       }
     } catch (err: any) {
       alert(`Audio decoding error: ${err.message}`);
@@ -82,6 +104,50 @@ export const AudioStudioPage: React.FC = () => {
     } else {
       audioRef.current.play();
       setIsPlaying(true);
+    }
+  };
+
+  const handleSeek = (timeSec: number) => {
+    const clamped = Math.max(0, Math.min(duration, timeSec));
+    setCurrentTime(clamped);
+    if (audioRef.current) {
+      audioRef.current.currentTime = clamped;
+    }
+  };
+
+  const skipRelative = (deltaSeconds: number) => {
+    if (!audioRef.current) return;
+    handleSeek(audioRef.current.currentTime + deltaSeconds);
+  };
+
+  const handleWaveformClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!duration || !audioRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+    handleSeek(ratio * duration);
+  };
+
+  const handlePlaybackRateChange = (rate: number) => {
+    setPlaybackRate(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+  };
+
+  const handleVolumeChange = (newVol: number) => {
+    setVolume(newVol);
+    setIsMuted(newVol === 0);
+    if (audioRef.current) {
+      audioRef.current.volume = newVol;
+    }
+  };
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (audioRef.current) {
+      audioRef.current.volume = nextMuted ? 0 : volume;
     }
   };
 
@@ -100,6 +166,7 @@ export const AudioStudioPage: React.FC = () => {
     try {
       const options: AudioProcessingOptions = {
         outputFormat,
+        bitrate: outputFormat === 'mp3' ? bitrate : undefined,
         channels,
         trimStartSeconds: trimStart > 0 ? trimStart : undefined,
         trimEndSeconds: trimEnd < audioBuffer.duration ? trimEnd : undefined,
@@ -108,7 +175,7 @@ export const AudioStudioPage: React.FC = () => {
         fadeOutSeconds: fadeOut > 0 ? fadeOut : undefined,
       };
 
-      const result = await AudioEngine.processToWav(audioBuffer, options);
+      const result = await AudioEngine.processAudio(audioBuffer, options);
       setOutputResult(result);
 
       // Save to database
@@ -118,7 +185,7 @@ export const AudioStudioPage: React.FC = () => {
         fileName: file.name,
         category: 'audio',
         inputFormat: inspection?.detectedFormat || 'audio',
-        outputFormat: 'wav',
+        outputFormat: result.format,
         inputSizeBytes: file.size,
         outputSizeBytes: result.sizeBytes,
         durationMs: Math.round(performance.now() - startTime),
@@ -133,7 +200,7 @@ export const AudioStudioPage: React.FC = () => {
 
   const handleDownload = () => {
     if (!outputResult || !file) return;
-    const filename = ExportManager.formatOutputFilename(file.name, 'wav');
+    const filename = ExportManager.formatOutputFilename(file.name, outputResult.format);
     ExportManager.download(outputResult.blob, filename);
   };
 
@@ -167,7 +234,7 @@ export const AudioStudioPage: React.FC = () => {
           </div>
           <h3 className="text-xl font-bold text-white tracking-tight">Select an Audio Track to Forge</h3>
           <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
-            Supports MP3, WAV, FLAC, OGG, Opus, AAC, M4A. Trim, normalize, preview waveforms, and transcode locally.
+            Supports MP3, WAV, FLAC, OGG, Opus, AAC, M4A. Fast forward, rewind, waveform seek, normalize, trim, and export to MP3 or WAV.
           </p>
         </div>
       ) : (
@@ -177,13 +244,13 @@ export const AudioStudioPage: React.FC = () => {
             <div className="glass-panel rounded-2xl p-6 space-y-6">
               <div className="flex items-center justify-between border-b border-gray-800 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold text-xs uppercase">
+                  <div className="w-9 h-9 rounded-xl bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold text-xs uppercase font-mono">
                     {inspection?.detectedFormat || 'AUD'}
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-white truncate max-w-sm">{file.name}</h4>
                     <p className="text-[11px] text-gray-400">
-                      {audioBuffer?.duration.toFixed(1)}s • {audioBuffer?.sampleRate} Hz •{' '}
+                      {duration.toFixed(1)}s • {audioBuffer?.sampleRate} Hz •{' '}
                       {audioBuffer?.numberOfChannels === 1 ? 'Mono' : 'Stereo'} •{' '}
                       {(file.size / (1024 * 1024)).toFixed(2)} MB
                     </p>
@@ -202,18 +269,28 @@ export const AudioStudioPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Waveform Visualizer */}
-              <div className="p-6 rounded-xl bg-[#080c14] border border-gray-800/80 space-y-4">
-                <div className="h-24 flex items-center gap-1">
+              {/* Waveform Visualizer with Click-To-Seek */}
+              <div className="p-6 rounded-xl bg-[#080c14] border border-gray-800/80 space-y-5 select-none">
+                <div className="flex items-center justify-between text-[11px] text-gray-400">
+                  <span>Interactive Waveform (Click to Seek)</span>
+                  <span className="font-mono text-violet-400 font-semibold">
+                    {currentTime.toFixed(1)}s / {duration.toFixed(1)}s
+                  </span>
+                </div>
+
+                <div
+                  onClick={handleWaveformClick}
+                  className="h-28 flex items-center gap-1 cursor-pointer group relative py-2"
+                  title="Click to jump to timestamp"
+                >
                   {peaks.map((peak, idx) => {
-                    const isPlayed =
-                      audioBuffer && (idx / peaks.length) * audioBuffer.duration <= currentTime;
+                    const isPlayed = duration > 0 && (idx / peaks.length) * duration <= currentTime;
                     return (
                       <div
                         key={idx}
-                        className="flex-1 rounded-full transition-all duration-75"
+                        className="flex-1 rounded-full transition-all duration-75 group-hover:opacity-90"
                         style={{
-                          height: `${Math.max(10, peak * 100)}%`,
+                          height: `${Math.max(8, peak * 100)}%`,
                           backgroundColor: isPlayed ? '#8B5CF6' : '#374151',
                         }}
                       />
@@ -221,19 +298,99 @@ export const AudioStudioPage: React.FC = () => {
                   })}
                 </div>
 
-                {/* Player Controls */}
-                <div className="flex items-center justify-between pt-2">
-                  <button
-                    onClick={togglePlay}
-                    className="w-10 h-10 rounded-full bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-lg shadow-violet-600/30 transition cursor-pointer"
-                  >
-                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
-                  </button>
+                {/* Scrubber Progress Slider */}
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 1}
+                  step="0.05"
+                  value={currentTime}
+                  onChange={(e) => handleSeek(Number(e.target.value))}
+                  className="w-full accent-violet-500 bg-gray-800 h-2 rounded-lg cursor-pointer"
+                />
 
-                  <div className="text-xs font-mono text-gray-300">
-                    <span>{currentTime.toFixed(1)}s</span>
-                    <span className="text-gray-600 mx-1">/</span>
-                    <span>{audioBuffer?.duration.toFixed(1)}s</span>
+                {/* Player Controls Bar (Rewind, Play/Pause, Fast Forward, Speed, Volume) */}
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+                  <div className="flex items-center gap-2">
+                    {/* Rewind 10s */}
+                    <button
+                      onClick={() => skipRelative(-10)}
+                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      title="Rewind 10 seconds"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                    {/* Rewind 5s */}
+                    <button
+                      onClick={() => skipRelative(-5)}
+                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      title="Rewind 5 seconds"
+                    >
+                      <Rewind className="w-4 h-4" />
+                    </button>
+
+                    {/* Play / Pause */}
+                    <button
+                      onClick={togglePlay}
+                      className="w-11 h-11 rounded-full bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-lg shadow-violet-600/30 transition cursor-pointer"
+                    >
+                      {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+                    </button>
+
+                    {/* Fast Forward 5s */}
+                    <button
+                      onClick={() => skipRelative(5)}
+                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      title="Fast Forward 5 seconds"
+                    >
+                      <FastForward className="w-4 h-4" />
+                    </button>
+                    {/* Fast Forward 10s */}
+                    <button
+                      onClick={() => skipRelative(10)}
+                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      title="Fast Forward 10 seconds"
+                    >
+                      <RotateCw className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Speed Selector */}
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className="text-gray-400 text-[10px]">Speed:</span>
+                    {[0.5, 1.0, 1.25, 1.5, 2.0].map((rate) => (
+                      <button
+                        key={rate}
+                        onClick={() => handlePlaybackRateChange(rate)}
+                        className={`px-2 py-1 rounded text-[10px] font-mono font-semibold transition ${
+                          playbackRate === rate
+                            ? 'bg-violet-600 text-white'
+                            : 'bg-gray-800 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        {rate}x
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Volume Slider */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={toggleMute}
+                      className="text-gray-400 hover:text-white p-1"
+                      title={isMuted ? 'Unmute' : 'Mute'}
+                    >
+                      {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4" />}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={isMuted ? 0 : volume}
+                      onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                      className="w-20 accent-violet-500 bg-gray-800 h-1.5 rounded cursor-pointer"
+                    />
                   </div>
                 </div>
               </div>
@@ -242,12 +399,12 @@ export const AudioStudioPage: React.FC = () => {
               {outputResult && (
                 <div className="p-4 rounded-xl bg-gray-900/90 border border-violet-500/40 flex items-center justify-between text-xs animate-fadeIn">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      Processed Audio (16-bit PCM WAV)
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                      Conversion Complete ({outputResult.format.toUpperCase()})
                     </span>
                     <div className="text-white font-mono mt-1">
-                      Duration: {outputResult.durationSeconds.toFixed(1)}s • Channels:{' '}
-                      {outputResult.channels === 1 ? 'Mono' : 'Stereo'}
+                      Duration: {outputResult.durationSeconds.toFixed(1)}s •{' '}
+                      {outputResult.channels === 1 ? 'Mono' : 'Stereo'} • {outputResult.sampleRate} Hz
                     </div>
                   </div>
 
@@ -255,6 +412,13 @@ export const AudioStudioPage: React.FC = () => {
                     <span className="text-violet-400 font-mono font-bold text-sm">
                       {(outputResult.sizeBytes / 1024).toFixed(1)} KB
                     </span>
+                    <p className="text-[10px] text-gray-400">
+                      {Math.max(
+                        0,
+                        Math.round(((file.size - outputResult.sizeBytes) / file.size) * 100)
+                      )}
+                      % Saved
+                    </p>
                   </div>
                 </div>
               )}
@@ -264,12 +428,23 @@ export const AudioStudioPage: React.FC = () => {
           {/* Controls Panel (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
             <div className="glass-panel rounded-2xl p-6 space-y-6">
-              {/* Output Format */}
+              {/* Output Format Selector */}
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
                   Target Audio Format
                 </label>
                 <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setOutputFormat('mp3')}
+                    className={`p-3 rounded-xl border text-left transition ${
+                      outputFormat === 'mp3'
+                        ? 'border-violet-500 bg-violet-500/10 text-white font-semibold'
+                        : 'border-gray-800 bg-gray-900 text-gray-400'
+                    }`}
+                  >
+                    <div className="text-xs font-mono font-bold">MP3</div>
+                    <div className="text-[10px] text-gray-400">LAME Encoded Audio</div>
+                  </button>
                   <button
                     onClick={() => setOutputFormat('wav')}
                     className={`p-3 rounded-xl border text-left transition ${
@@ -281,19 +456,35 @@ export const AudioStudioPage: React.FC = () => {
                     <div className="text-xs font-mono font-bold">WAV</div>
                     <div className="text-[10px] text-gray-400">Lossless 16-bit PCM</div>
                   </button>
-                  <button
-                    onClick={() => setOutputFormat('mp3')}
-                    className={`p-3 rounded-xl border text-left transition ${
-                      outputFormat === 'mp3'
-                        ? 'border-violet-500 bg-violet-500/10 text-white font-semibold'
-                        : 'border-gray-800 bg-gray-900 text-gray-400'
-                    }`}
-                  >
-                    <div className="text-xs font-mono font-bold">MP3</div>
-                    <div className="text-[10px] text-gray-400">Compressed Audio</div>
-                  </button>
                 </div>
               </div>
+
+              {/* Bitrate Selector for MP3 */}
+              {outputFormat === 'mp3' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold uppercase tracking-wider text-gray-400">
+                      MP3 Bitrate
+                    </span>
+                    <span className="font-mono text-violet-400 font-bold">{bitrate} kbps</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[128, 192, 256, 320].map((br) => (
+                      <button
+                        key={br}
+                        onClick={() => setBitrate(br)}
+                        className={`py-1.5 rounded-lg border text-xs font-mono font-semibold transition ${
+                          bitrate === br
+                            ? 'border-violet-500 bg-violet-500/15 text-violet-400'
+                            : 'border-gray-800 bg-gray-900 text-gray-400'
+                        }`}
+                      >
+                        {br}k
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Trimming Controls */}
               <div className="space-y-3">
@@ -306,9 +497,9 @@ export const AudioStudioPage: React.FC = () => {
                     <label className="text-[10px] text-gray-400 block mb-1">Start (sec)</label>
                     <input
                       type="number"
-                      step="0.5"
+                      step="0.1"
                       min="0"
-                      max={audioBuffer?.duration || 100}
+                      max={duration}
                       value={trimStart}
                       onChange={(e) => setTrimStart(Number(e.target.value))}
                       className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white font-mono outline-none"
@@ -318,9 +509,9 @@ export const AudioStudioPage: React.FC = () => {
                     <label className="text-[10px] text-gray-400 block mb-1">End (sec)</label>
                     <input
                       type="number"
-                      step="0.5"
+                      step="0.1"
                       min="0"
-                      max={audioBuffer?.duration || 100}
+                      max={duration}
                       value={trimEnd}
                       onChange={(e) => setTrimEnd(Number(e.target.value))}
                       className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white font-mono outline-none"
@@ -405,12 +596,12 @@ export const AudioStudioPage: React.FC = () => {
                   {isProcessing ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Processing Audio...</span>
+                      <span>Encoding to {outputFormat.toUpperCase()}...</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4" />
-                      <span>Process & Export Audio</span>
+                      <span>Convert to {outputFormat.toUpperCase()}</span>
                     </>
                   )}
                 </button>
@@ -421,7 +612,7 @@ export const AudioStudioPage: React.FC = () => {
                     className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
-                    <span>Download WAV File</span>
+                    <span>Download {outputResult.format.toUpperCase()} ({(outputResult.sizeBytes / 1024).toFixed(1)} KB)</span>
                   </button>
                 )}
               </div>

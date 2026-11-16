@@ -14,8 +14,12 @@ import { FileInspector, ExportManager } from '@mediaforge/core';
 import { InspectionResult } from '@mediaforge/shared-types';
 import { db } from '@mediaforge/database';
 
-export const DocumentStudioPage: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
+interface DocumentStudioPageProps {
+  initialFile?: File | null;
+}
+
+export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialFile }) => {
+  const [file, setFile] = useState<File | null>(initialFile || null);
   const [inspection, setInspection] = useState<InspectionResult | null>(null);
   const [inputContent, setInputContent] = useState<string>('');
   const [outputContent, setOutputContent] = useState<string>('');
@@ -27,6 +31,12 @@ export const DocumentStudioPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (initialFile) {
+      handleFileSelected(initialFile);
+    }
+  }, [initialFile]);
 
   const handleFileSelected = async (selectedFile: File) => {
     setFile(selectedFile);
@@ -281,3 +291,4 @@ export const DocumentStudioPage: React.FC = () => {
     </div>
   );
 };
+

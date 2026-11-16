@@ -30,3 +30,4 @@ Because MediaForge is strictly local-first and client-side, certain platform con
 
 * Codecs like Apple HEIC/HEIF or proprietary RAW formats require specialized WebAssembly decoders because standard browser `<canvas>` elements cannot decode them natively.
 * MediaForge uses open-source WASM decoders with permissive licenses for these formats.
+

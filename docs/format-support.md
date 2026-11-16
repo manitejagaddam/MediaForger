@@ -28,3 +28,4 @@ MediaForge separates decoding (reading) and encoding (writing) availability for 
 | **TXT** | Document | `.txt` | `text/plain` | ✅ | ✅ | Level 1 Native | — | — | UTF-8 plain text |
 | **PDF** | Document | `.pdf` | `application/pdf` | ✅ | ✅ | Level 2 WASM | — | — | Portable Document Format |
 | **ZIP** | Archive | `.zip` | `application/zip` | ✅ | ✅ | Level 2 WASM | — | — | Deflate compressed archive |
+

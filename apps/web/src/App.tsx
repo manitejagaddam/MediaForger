@@ -17,7 +17,7 @@ import { getStorageQuota } from '@mediaforge/storage';
 
 export const App: React.FC = () => {
   const [activePage, setActivePage] = useState<PageId>('dashboard');
-  const [selectedFileForImage, setSelectedFileForImage] = useState<File | null>(null);
+  const [activeFile, setActiveFile] = useState<File | null>(null);
   const [storageUsageMb, setStorageUsageMb] = useState<number>(0);
 
   useEffect(() => {
@@ -27,9 +27,9 @@ export const App: React.FC = () => {
     });
   }, [activePage]);
 
-  const handleSelectFileForImageStudio = (file: File) => {
-    setSelectedFileForImage(file);
-    setActivePage('image');
+  const handleSelectFile = (file: File, targetStudio: PageId) => {
+    setActiveFile(file);
+    setActivePage(targetStudio);
   };
 
   const renderActivePage = () => {
@@ -38,19 +38,19 @@ export const App: React.FC = () => {
         return (
           <DashboardPage
             onNavigate={setActivePage}
-            onSelectFileForImageStudio={handleSelectFileForImageStudio}
+            onSelectFile={handleSelectFile}
           />
         );
       case 'image':
-        return <ImageStudioPage initialFile={selectedFileForImage} />;
+        return <ImageStudioPage initialFile={activeFile} />;
       case 'audio':
-        return <AudioStudioPage />;
+        return <AudioStudioPage initialFile={activeFile} />;
       case 'video':
-        return <VideoStudioPage />;
+        return <VideoStudioPage initialFile={activeFile} />;
       case 'document':
-        return <DocumentStudioPage />;
+        return <DocumentStudioPage initialFile={activeFile} />;
       case 'archive':
-        return <ArchiveStudioPage />;
+        return <ArchiveStudioPage initialFile={activeFile} />;
       case 'ai':
         return <AiStudioPage />;
       case 'batch':
@@ -65,7 +65,7 @@ export const App: React.FC = () => {
         return (
           <DashboardPage
             onNavigate={setActivePage}
-            onSelectFileForImageStudio={handleSelectFileForImageStudio}
+            onSelectFile={handleSelectFile}
           />
         );
     }
@@ -88,3 +88,4 @@ export const App: React.FC = () => {
     </div>
   );
 };
+

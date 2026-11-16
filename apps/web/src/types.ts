@@ -10,3 +10,4 @@ export type PageId =
   | 'history'
   | 'settings'
   | 'about';
+

@@ -14,7 +14,11 @@ import { ArchiveEngine, ArchiveFileEntry } from '@mediaforge/archive-engine';
 import { ExportManager } from '@mediaforge/core';
 import { db } from '@mediaforge/database';
 
-export const ArchiveStudioPage: React.FC = () => {
+interface ArchiveStudioPageProps {
+  initialFile?: File | null;
+}
+
+export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFile }) => {
   const [activeTab, setActiveTab] = useState<'create' | 'extract'>('create');
 
   // Create ZIP state
@@ -31,6 +35,18 @@ export const ArchiveStudioPage: React.FC = () => {
 
   const fileInputCreateRef = useRef<HTMLInputElement>(null);
   const fileInputExtractRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (initialFile) {
+      if (initialFile.name.endsWith('.zip') || initialFile.type.includes('zip')) {
+        setActiveTab('extract');
+        handleExtractZip(initialFile);
+      } else {
+        setActiveTab('create');
+        setFilesToZip([{ name: initialFile.name, file: initialFile }]);
+      }
+    }
+  }, [initialFile]);
 
   const handleAddFilesToZip = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {

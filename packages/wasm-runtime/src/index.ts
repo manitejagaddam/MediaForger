@@ -82,3 +82,4 @@ export class WasmRuntimeManager {
     return false;
   }
 }
+

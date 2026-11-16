@@ -31,3 +31,4 @@ export class ExportManager {
     return `${cleanBase}.${targetFormat.toLowerCase()}`;
   }
 }
+

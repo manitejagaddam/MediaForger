@@ -59,3 +59,4 @@ graph TD
    - Update `addons.md` when new codecs, models, or presets are added.
 3. **Protocol 3: Zero-Mock Rule**:
    - Simulated delays, fabricated file sizes, or placeholder outputs are strictly forbidden. All logic must process real bytes and produce real output buffers.
+

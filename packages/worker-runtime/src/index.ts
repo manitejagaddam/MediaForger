@@ -141,3 +141,4 @@ export class WorkerPool {
     this.activeJobs.clear();
   }
 }
+

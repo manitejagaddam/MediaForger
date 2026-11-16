@@ -22,15 +22,14 @@ import { db, ConversionHistoryItem } from '@mediaforge/database';
 
 interface DashboardPageProps {
   onNavigate: (page: PageId) => void;
-  onSelectFileForImageStudio: (file: File) => void;
+  onSelectFile: (file: File, targetStudio: PageId) => void;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   onNavigate,
-  onSelectFileForImageStudio,
+  onSelectFile,
 }) => {
   const [dragOver, setDragOver] = useState(false);
-  const [inspectedFile, setInspectedFile] = useState<{ file: File; result: InspectionResult } | null>(null);
   const [recentHistory, setRecentHistory] = useState<ConversionHistoryItem[]>([]);
   const [capabilities, setCapabilities] = useState<SystemCapabilities | null>(null);
 
@@ -44,7 +43,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   const handleFileDrop = async (file: File) => {
     const result = await FileInspector.inspect(file);
-    setInspectedFile({ file, result });
+    let targetStudio: PageId = 'image';
+    if (result.category === 'audio') targetStudio = 'audio';
+    else if (result.category === 'video') targetStudio = 'video';
+    else if (result.category === 'document') targetStudio = 'document';
+    else if (result.category === 'archive') targetStudio = 'archive';
+    else if (result.category === 'image') targetStudio = 'image';
+
+    // Direct redirection: hand off file directly to target studio and navigate
+    onSelectFile(file, targetStudio);
   };
 
   const studios = [
@@ -154,52 +161,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             />
           </label>
         </div>
-
-        {/* Inspected File Modal / Banner */}
-        {inspectedFile && (
-          <div className="mt-6 p-4 rounded-xl bg-gray-900/90 border border-blue-500/40 text-left flex items-center justify-between animate-fadeIn">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs uppercase">
-                {inspectedFile.result.extension || 'FILE'}
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-white">{inspectedFile.file.name}</h4>
-                <div className="flex items-center gap-3 text-xs text-gray-400 mt-0.5">
-                  <span>{(inspectedFile.file.size / (1024 * 1024)).toFixed(2)} MB</span>
-                  <span>•</span>
-                  <span className="font-mono text-blue-400">
-                    {inspectedFile.result.detectedFormat.toUpperCase()}
-                  </span>
-                  <span>•</span>
-                  <span className="text-emerald-400 font-medium">Magic Bytes Verified</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  if (inspectedFile.result.category === 'image') {
-                    onSelectFileForImageStudio(inspectedFile.file);
-                    onNavigate('image');
-                  } else {
-                    onNavigate(inspectedFile.result.category as PageId);
-                  }
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow transition-all"
-              >
-                <span>Open in {inspectedFile.result.category.toUpperCase()} Studio</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setInspectedFile(null)}
-                className="px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Studios Grid */}
@@ -360,3 +321,4 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     </div>
   );
 };
+
