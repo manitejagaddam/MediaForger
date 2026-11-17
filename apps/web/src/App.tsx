@@ -132,7 +132,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#0B0F19] text-gray-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#09090b] text-zinc-100 overflow-hidden font-sans selection:bg-zinc-800 selection:text-white">
       {/* Navigation Sidebar */}
       <Sidebar
         activePage={activePage}

@@ -71,20 +71,20 @@ export const SettingsPage: React.FC = () => {
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
       {/* Storage & Persistence */}
       <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-          <div className="flex items-center gap-2">
-            <HardDrive className="w-5 h-5 text-blue-400" />
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+          <div className="flex items-center gap-2.5">
+            <HardDrive className="w-5 h-5 text-zinc-300" />
+            <h4 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
               Local Storage Quota & OPFS
             </h4>
           </div>
 
           <button
             onClick={handleRequestPersistence}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition active:scale-95 ${
               quota.isPersistent
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                : 'bg-blue-600 hover:bg-blue-500 text-white shadow'
+                ? 'bg-zinc-800 text-zinc-200 border border-zinc-700'
+                : 'bg-zinc-100 hover:bg-white text-zinc-950 shadow-sm'
             }`}
           >
             {quota.isPersistent ? 'Storage Persisted ✓' : 'Request Persistence'}
@@ -92,29 +92,29 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 rounded-xl bg-gray-900 border border-gray-800">
-            <span className="text-gray-400">Total Quota</span>
+          <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+            <span className="text-zinc-400">Total Quota</span>
             <p className="text-lg font-bold text-white font-mono mt-1">
               {(quota.quotaBytes / (1024 * 1024 * 1024)).toFixed(1)} GB
             </p>
           </div>
-          <div className="p-4 rounded-xl bg-gray-900 border border-gray-800">
-            <span className="text-gray-400">Current Usage</span>
-            <p className="text-lg font-bold text-blue-400 font-mono mt-1">
+          <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+            <span className="text-zinc-400">Current Usage</span>
+            <p className="text-lg font-bold text-zinc-100 font-mono mt-1">
               {(quota.usageBytes / (1024 * 1024)).toFixed(2)} MB
             </p>
           </div>
-          <div className="p-4 rounded-xl bg-gray-900 border border-gray-800">
-            <span className="text-gray-400">Quota Consumed</span>
-            <p className="text-lg font-bold text-emerald-400 font-mono mt-1">
+          <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+            <span className="text-zinc-400">Quota Consumed</span>
+            <p className="text-lg font-bold text-zinc-100 font-mono mt-1">
               {quota.percentUsed.toFixed(2)}%
             </p>
           </div>
         </div>
 
-        <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+        <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
           <div
-            className="bg-blue-500 h-full rounded-full transition-all duration-500"
+            className="bg-zinc-200 h-full rounded-full transition-all duration-500"
             style={{ width: `${Math.max(2, Math.min(100, quota.percentUsed))}%` }}
           />
         </div>
@@ -122,9 +122,9 @@ export const SettingsPage: React.FC = () => {
 
       {/* Execution & Workers */}
       <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-3">
-          <Cpu className="w-5 h-5 text-indigo-400" />
-          <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+        <div className="flex items-center gap-2.5 border-b border-zinc-800/80 pb-3">
+          <Cpu className="w-5 h-5 text-zinc-300" />
+          <h4 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
             Worker Concurrency & Execution Limits
           </h4>
         </div>
@@ -132,8 +132,8 @@ export const SettingsPage: React.FC = () => {
         <div className="space-y-4 text-xs max-w-xl">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-gray-300 font-medium">Max Web Worker Concurrency</span>
-              <span className="font-mono text-indigo-400 font-bold">{concurrency} Threads</span>
+              <span className="text-zinc-300 font-medium">Max Web Worker Concurrency</span>
+              <span className="font-mono text-zinc-100 font-bold">{concurrency} Threads</span>
             </div>
             <input
               type="range"
@@ -141,14 +141,14 @@ export const SettingsPage: React.FC = () => {
               max="8"
               value={concurrency}
               onChange={(e) => setConcurrency(Number(e.target.value))}
-              className="w-full accent-indigo-500 bg-gray-800 h-2 rounded cursor-pointer"
+              className="w-full accent-white bg-zinc-800 h-2 rounded cursor-pointer"
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-gray-300 font-medium">Automatic Retention Cleanup</span>
-              <span className="font-mono text-indigo-400 font-bold">{retentionDays} Days</span>
+              <span className="text-zinc-300 font-medium">Automatic Retention Cleanup</span>
+              <span className="font-mono text-zinc-100 font-bold">{retentionDays} Days</span>
             </div>
             <input
               type="range"
@@ -156,7 +156,7 @@ export const SettingsPage: React.FC = () => {
               max="30"
               value={retentionDays}
               onChange={(e) => setRetentionDays(Number(e.target.value))}
-              className="w-full accent-indigo-500 bg-gray-800 h-2 rounded cursor-pointer"
+              className="w-full accent-white bg-zinc-800 h-2 rounded cursor-pointer"
             />
           </div>
         </div>
@@ -164,9 +164,9 @@ export const SettingsPage: React.FC = () => {
 
       {/* Cache & Maintenance */}
       <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <div className="flex items-center gap-2 border-b border-gray-800 pb-3">
-          <Trash2 className="w-5 h-5 text-red-400" />
-          <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+        <div className="flex items-center gap-2.5 border-b border-zinc-800/80 pb-3">
+          <Trash2 className="w-5 h-5 text-zinc-400" />
+          <h4 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
             Cache Purging & Maintenance
           </h4>
         </div>
@@ -175,14 +175,14 @@ export const SettingsPage: React.FC = () => {
           <button
             disabled={clearing}
             onClick={handleClearWasmCache}
-            className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-300 transition"
+            className="px-4 py-2 rounded-xl bg-zinc-850 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 border border-zinc-750 transition active:scale-95"
           >
             Clear WASM Binaries Cache
           </button>
           <button
             disabled={clearing}
             onClick={handlePurgeOldData}
-            className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-red-500/20 hover:text-red-400 text-xs font-semibold text-gray-300 transition"
+            className="px-4 py-2 rounded-xl bg-zinc-850 hover:bg-zinc-800 text-xs font-semibold text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
           >
             Purge Expired Database Outputs
           </button>

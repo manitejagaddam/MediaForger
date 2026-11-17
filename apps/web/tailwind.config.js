@@ -5,20 +5,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0B0F19',
-        surface: '#111827',
-        surfaceElevated: '#1F2937',
-        border: '#374151',
+        background: '#09090b',
+        surface: '#111114',
+        surfaceElevated: '#17171c',
+        surfaceCard: '#141418',
+        border: '#222227',
+        borderMuted: '#1a1a20',
         primary: {
-          DEFAULT: '#3B82F6',
-          hover: '#2563EB',
-          subtle: 'rgba(59, 130, 246, 0.1)',
+          DEFAULT: '#f4f4f5',
+          hover: '#ffffff',
+          subtle: 'rgba(255, 255, 255, 0.05)',
         },
-        accent: '#60A5FA',
-        muted: '#9CA3AF',
+        accent: '#e4e4e7',
+        muted: '#71717a',
       },
     },
   },
   plugins: [],
 };
-

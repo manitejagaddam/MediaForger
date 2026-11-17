@@ -117,3 +117,24 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
   - Implemented refined multi-stage pipeline: IS-Net neural mask extraction -> edge shift & feathering -> studio background replacement (Transparent, Solid Color, Gradient, Bokeh Blur, Custom Image).
   - Fixed portrait blur: In Bokeh Blur mode, the background is softly blurred while the neural cutout of the subject is rendered 100% crystal-sharp on top.
   - Verified Vite bundling of ONNX Runtime Web WebAssembly assets (`dist/assets/ort-wasm-simd-threaded.jsep*.wasm`) and 29 passing Vitest tests.
+* **2026-11-17 14:30**: Complete Professional Obsidian Dark Redesign Across All Surfaces:
+  - Addressed user feedback to eliminate all gradients and eye-straining colors, and implement an ultra-clean, professional dark UI with smooth micro-animations.
+  - Re-architected theme design tokens in `apps/web/src/index.css` and `apps/web/tailwind.config.js`:
+    - Base background: `#09090b` (true Obsidian dark).
+    - Surface panel: `#111114`, card surface: `#141418`, borders: `#222227` / `#27272a`.
+    - Text hierarchy: headings `#f4f4f5` (crisp white), body `#a1a1aa`, muted `#71717a`.
+    - Buttons: `.btn-primary` (clean white pill `#f4f4f5` with active scale), `.btn-secondary` (`#18181b` border `#27272a`).
+    - Custom dark scrollbar and custom range slider with smooth white thumb.
+  - Eliminated all `bg-gradient-to-*` and eye-straining colors (neon purple, cyan, saturated fuchsia, bright emerald) across all 11 studio & utility pages:
+    - `DashboardPage.tsx`: Solid dark icon badges (`bg-zinc-800`), refined dropzone, clean dark metrics and history.
+    - `ImageStudioPage.tsx`: Clean dark controls, monochromatic format tags, `btn-primary` forge trigger.
+    - `AudioStudioPage.tsx`: Replaced violet theme; interactive waveform now uses `#f4f4f5` (played) / `#27272a` (unplayed); tactile playback controls and dark format selectors.
+    - `VideoStudioPage.tsx`: Replaced amber theme; monochromatic video player controls, clean frame-stepping buttons, and snapshot extractor.
+    - `DocumentStudioPage.tsx`: Replaced emerald/blue theme; monospace preview panels and dark delimiter selectors.
+    - `ArchiveStudioPage.tsx`: Replaced rose theme; Obsidian dark ZIP creator and inspection view.
+    - `BatchStudioPage.tsx`: Clean dark batch queue and download buttons.
+    - `AiStudioPage.tsx`: Monochromatic studio lighting gradients, refined split-slider handle, and dark parameter controls.
+    - `Sidebar.tsx` & `Header.tsx`: Monochromatic dark branding, active tab indicators (`bg-zinc-800/90 text-white`), and storage meter.
+    - `HistoryPage.tsx`, `SettingsPage.tsx`, `AboutPage.tsx`: Monochromatic metrics, format matrix, and maintenance tools.
+  - Micro-animations added: card hover lift (`-translate-y-0.5 hover:border-zinc-700`), tactile button clicks (`active:scale-[0.98]`), animated tab transitions.
+  - Verified with full production build (`tsc && vite build`) and 29 passing Vitest tests.

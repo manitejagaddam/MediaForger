@@ -195,7 +195,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
       {!file ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="glass-panel border-2 border-dashed border-gray-700 hover:border-amber-500 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-gray-900/50"
+          className="glass-panel border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-[#141418] group"
         >
           <input
             ref={fileInputRef}
@@ -208,11 +208,11 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-600/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/10 mb-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
             <Film className="w-8 h-8" />
           </div>
-          <h3 className="text-xl font-bold text-white tracking-tight">Select a Video to Forge</h3>
-          <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select a Video to Forge</h3>
+          <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">
             Inspect video streams, scrub, fast-forward, step frames, and extract crystal-clear full-resolution snapshots.
           </p>
         </div>
@@ -221,14 +221,14 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
           {/* Video Player & Interactive Scrubbing (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             <div className="glass-panel rounded-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs uppercase font-mono">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 flex items-center justify-center font-bold text-xs uppercase font-mono">
                     {inspection?.detectedFormat || 'VID'}
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white truncate max-w-sm">{file.name}</h4>
-                    <p className="text-[11px] text-gray-400">
+                    <h4 className="text-xs font-bold text-zinc-100 truncate max-w-sm">{file.name}</h4>
+                    <p className="text-[11px] text-zinc-400">
                       {videoMeta?.width} × {videoMeta?.height} px • {duration.toFixed(1)}s •{' '}
                       {(file.size / (1024 * 1024)).toFixed(2)} MB
                     </p>
@@ -249,14 +249,14 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                     }
                     onClearFile?.();
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
+                  className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 transition active:scale-[0.98]"
                 >
                   Change Video
                 </button>
               </div>
 
               {/* Video Player Viewport */}
-              <div className="relative rounded-xl bg-black border border-gray-800 overflow-hidden flex items-center justify-center min-h-[300px]">
+              <div className="relative rounded-xl bg-black border border-zinc-800 overflow-hidden flex items-center justify-center min-h-[300px]">
                 <video
                   ref={videoRef}
                   src={videoUrl || ''}
@@ -271,9 +271,9 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
 
               {/* Interactive Timeline Progress Scrubber */}
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs font-mono text-gray-300">
-                  <span className="text-amber-400 font-bold">{currentTime.toFixed(2)}s</span>
-                  <span className="text-gray-400">{duration.toFixed(2)}s</span>
+                <div className="flex items-center justify-between text-xs font-mono text-zinc-300">
+                  <span className="text-zinc-100 font-bold">{currentTime.toFixed(2)}s</span>
+                  <span className="text-zinc-500">{duration.toFixed(2)}s</span>
                 </div>
                 <input
                   type="range"
@@ -282,18 +282,18 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   step="0.033"
                   value={currentTime}
                   onChange={(e) => handleSeek(Number(e.target.value))}
-                  className="w-full accent-amber-500 bg-gray-800 h-2 rounded-lg cursor-pointer"
+                  className="w-full accent-white bg-zinc-800 h-2 rounded-lg cursor-pointer"
                 />
               </div>
 
               {/* Video Control Bar */}
-              <div className="p-4 rounded-xl bg-[#080c14] border border-gray-800 flex flex-wrap items-center justify-between gap-4">
+              <div className="p-4 rounded-xl bg-[#09090c] border border-zinc-800 flex flex-wrap items-center justify-between gap-4">
                 {/* Playback & Seeking Buttons */}
                 <div className="flex items-center gap-1.5">
                   {/* Rewind 10s */}
                   <button
                     onClick={() => skipRelative(-10)}
-                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition"
+                    className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                     title="Rewind 10s"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -301,7 +301,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   {/* Rewind 5s */}
                   <button
                     onClick={() => skipRelative(-5)}
-                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition"
+                    className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                     title="Rewind 5s"
                   >
                     <Rewind className="w-4 h-4" />
@@ -309,7 +309,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   {/* Step 1 frame back */}
                   <button
                     onClick={() => stepFrame(-1)}
-                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition"
+                    className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                     title="Previous Frame (1/30s)"
                   >
                     <StepBack className="w-4 h-4" />
@@ -318,7 +318,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   {/* Play / Pause */}
                   <button
                     onClick={togglePlay}
-                    className="w-10 h-10 rounded-full bg-amber-600 hover:bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-600/30 transition cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-white text-zinc-950 flex items-center justify-center shadow-sm transition active:scale-95 cursor-pointer"
                   >
                     {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
                   </button>
@@ -326,7 +326,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   {/* Step 1 frame forward */}
                   <button
                     onClick={() => stepFrame(1)}
-                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition"
+                    className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                     title="Next Frame (1/30s)"
                   >
                     <StepForward className="w-4 h-4" />
@@ -334,7 +334,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   {/* Fast Forward 5s */}
                   <button
                     onClick={() => skipRelative(5)}
-                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition"
+                    className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                     title="Fast Forward 5s"
                   >
                     <FastForward className="w-4 h-4" />
@@ -342,7 +342,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   {/* Fast Forward 10s */}
                   <button
                     onClick={() => skipRelative(10)}
-                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition"
+                    className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                     title="Fast Forward 10s"
                   >
                     <RotateCw className="w-4 h-4" />
@@ -355,10 +355,10 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                     <button
                       key={rate}
                       onClick={() => handlePlaybackRateChange(rate)}
-                      className={`px-2 py-1 rounded text-[10px] font-mono font-semibold transition ${
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono font-semibold transition active:scale-95 ${
                         playbackRate === rate
-                          ? 'bg-amber-600 text-white'
-                          : 'bg-gray-800 text-gray-400 hover:text-white'
+                          ? 'bg-zinc-800 text-white border border-zinc-700'
+                          : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-transparent'
                       }`}
                     >
                       {rate}x
@@ -370,9 +370,9 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                 <div className="flex items-center gap-2">
                   <button
                     onClick={toggleMute}
-                    className="text-gray-400 hover:text-white p-1"
+                    className="text-zinc-400 hover:text-zinc-100 p-1 transition"
                   >
-                    {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4" />}
+                    {isMuted ? <VolumeX className="w-4 h-4 text-zinc-400" /> : <Volume2 className="w-4 h-4" />}
                   </button>
                   <input
                     type="range"
@@ -381,7 +381,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                     step="0.05"
                     value={isMuted ? 0 : volume}
                     onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                    className="w-16 accent-amber-500 bg-gray-800 h-1.5 rounded cursor-pointer"
+                    className="w-16 accent-white bg-zinc-800 h-1.5 rounded cursor-pointer"
                   />
                 </div>
               </div>
@@ -392,38 +392,38 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
           <div className="lg:col-span-5 space-y-6">
             <div className="glass-panel rounded-2xl p-6 space-y-6">
               <div>
-                <h4 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-amber-400" />
+                <h4 className="text-sm font-bold text-zinc-100 tracking-tight flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-zinc-300" />
                   High-Precision Frame & Thumbnail Capture
                 </h4>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-zinc-400 mt-1">
                   Use the scrubber and frame-stepping buttons on the player to stop on the exact frame, then capture full-resolution output.
                 </p>
               </div>
 
               {/* Snapshot Format & Quality */}
-              <div className="space-y-4 pt-2 border-t border-gray-800">
+              <div className="space-y-4 pt-2 border-t border-zinc-800">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                     Snapshot Output Format
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setThumbFormat('jpeg')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold transition ${
+                      className={`p-2.5 rounded-xl border text-xs font-bold transition active:scale-[0.98] ${
                         thumbFormat === 'jpeg'
-                          ? 'border-amber-500 bg-amber-500/10 text-white'
-                          : 'border-gray-800 bg-gray-900 text-gray-400'
+                          ? 'border-zinc-300 bg-zinc-800 text-white'
+                          : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                       }`}
                     >
                       JPEG Photo
                     </button>
                     <button
                       onClick={() => setThumbFormat('png')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold transition ${
+                      className={`p-2.5 rounded-xl border text-xs font-bold transition active:scale-[0.98] ${
                         thumbFormat === 'png'
-                          ? 'border-amber-500 bg-amber-500/10 text-white'
-                          : 'border-gray-800 bg-gray-900 text-gray-400'
+                          ? 'border-zinc-300 bg-zinc-800 text-white'
+                          : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                       }`}
                     >
                       PNG Lossless
@@ -434,7 +434,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                 {thumbFormat === 'jpeg' && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold uppercase tracking-wider text-gray-400">
+                      <span className="font-bold uppercase tracking-wider text-zinc-400">
                         Image Quality ({thumbQuality}%)
                       </span>
                     </div>
@@ -444,7 +444,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                       max="100"
                       value={thumbQuality}
                       onChange={(e) => setThumbQuality(Number(e.target.value))}
-                      className="w-full accent-amber-500 bg-gray-800 h-2 rounded cursor-pointer"
+                      className="w-full accent-white bg-zinc-800 h-2 rounded cursor-pointer"
                     />
                   </div>
                 )}
@@ -454,16 +454,16 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
               <button
                 disabled={isCapturing}
                 onClick={handleCaptureThumbnail}
-                className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:bg-amber-800 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-amber-600/30 flex items-center justify-center gap-2 transition cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-zinc-100 hover:bg-white disabled:bg-zinc-800 text-zinc-950 disabled:text-zinc-500 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
               >
                 {isCapturing ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-zinc-900" />
                     <span>Capturing Frame...</span>
                   </>
                 ) : (
                   <>
-                    <Camera className="w-4 h-4" />
+                    <Camera className="w-4 h-4 text-zinc-900" />
                     <span>Capture Frame at {currentTime.toFixed(2)}s</span>
                   </>
                 )}
@@ -471,10 +471,10 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
 
               {/* Captured Thumbnail Preview & Download */}
               {capturedThumbBlob && thumbUrl && (
-                <div className="p-4 rounded-xl bg-gray-900 border border-amber-500/40 space-y-3 animate-fadeIn">
+                <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-750 space-y-3 animate-fadeIn">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-white">Extracted Snapshot</span>
-                    <span className="font-mono text-amber-400">
+                    <span className="font-semibold text-zinc-200">Extracted Snapshot</span>
+                    <span className="font-mono text-zinc-100">
                       {(capturedThumbBlob.size / 1024).toFixed(1)} KB ({thumbFormat.toUpperCase()})
                     </span>
                   </div>
@@ -482,12 +482,12 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
                   <img
                     src={thumbUrl}
                     alt="Captured Snapshot"
-                    className="w-full h-44 object-cover rounded-lg border border-gray-800"
+                    className="w-full h-44 object-cover rounded-lg border border-zinc-800"
                   />
 
                   <button
                     onClick={handleDownloadThumbnail}
-                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider shadow flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-white border border-zinc-700 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download Snapshot ({thumbFormat.toUpperCase()})</span>

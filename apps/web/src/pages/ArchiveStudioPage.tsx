@@ -117,27 +117,27 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
       {/* Tab Switcher */}
-      <div className="flex items-center gap-3 border-b border-gray-800 pb-4">
+      <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-4">
         <button
           onClick={() => setActiveTab('create')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition active:scale-[0.98] ${
             activeTab === 'create'
-              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-              : 'text-gray-400 hover:text-white'
+              ? 'bg-zinc-800/90 text-white border border-zinc-700 shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
           }`}
         >
-          <FolderArchive className="w-4 h-4" />
+          <FolderArchive className="w-4 h-4 text-zinc-300" />
           <span>Create ZIP Archive</span>
         </button>
         <button
           onClick={() => setActiveTab('extract')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition active:scale-[0.98] ${
             activeTab === 'extract'
-              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-              : 'text-gray-400 hover:text-white'
+              ? 'bg-zinc-800/90 text-white border border-zinc-700 shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
           }`}
         >
-          <Archive className="w-4 h-4" />
+          <Archive className="w-4 h-4 text-zinc-300" />
           <span>Extract & Inspect ZIP</span>
         </button>
       </div>
@@ -149,8 +149,8 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
             <div className="glass-panel rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-bold text-white">Files to Compress</h4>
-                  <p className="text-xs text-gray-400">
+                  <h4 className="text-sm font-bold text-zinc-100">Files to Compress</h4>
+                  <p className="text-xs text-zinc-400">
                     {filesToZip.length} files selected (
                     {(
                       filesToZip.reduce((acc, f) => acc + f.file.size, 0) /
@@ -162,7 +162,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
 
                 <button
                   onClick={() => fileInputCreateRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-zinc-200 hover:text-white text-xs font-semibold border border-zinc-700/80 transition active:scale-[0.98] cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>Add Files</span>
@@ -179,7 +179,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
               {filesToZip.length === 0 ? (
                 <div
                   onClick={() => fileInputCreateRef.current?.click()}
-                  className="border-2 border-dashed border-gray-800 hover:border-gray-700 rounded-xl p-12 text-center cursor-pointer text-xs text-gray-400"
+                  className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-900/30 rounded-xl p-12 text-center cursor-pointer text-xs text-zinc-400 transition"
                 >
                   Click "Add Files" or drop multiple files here to bundle them into a secure ZIP.
                 </div>
@@ -188,13 +188,13 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                   {filesToZip.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-3 rounded-xl bg-gray-900 border border-gray-800 text-xs"
+                      className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs hover:border-zinc-700 transition"
                     >
                       <div className="flex items-center gap-3">
-                        <FileCode className="w-4 h-4 text-gray-400" />
+                        <FileCode className="w-4 h-4 text-zinc-400" />
                         <div>
-                          <p className="text-white font-medium truncate max-w-sm">{item.name}</p>
-                          <p className="text-[10px] text-gray-400">
+                          <p className="text-zinc-100 font-medium truncate max-w-sm">{item.name}</p>
+                          <p className="text-[10px] text-zinc-500 font-mono">
                             {(item.file.size / 1024).toFixed(1)} KB
                           </p>
                         </div>
@@ -204,7 +204,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                         onClick={() =>
                           setFilesToZip((prev) => prev.filter((_, i) => i !== idx))
                         }
-                        className="text-gray-400 hover:text-red-400 p-1"
+                        className="text-zinc-500 hover:text-zinc-200 p-1 transition"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -219,7 +219,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
           <div className="lg:col-span-5 space-y-6">
             <div className="glass-panel rounded-2xl p-6 space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                   Archive File Name
                 </label>
                 <div className="flex items-center gap-2">
@@ -227,18 +227,18 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                     type="text"
                     value={archiveName}
                     onChange={(e) => setArchiveName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white font-mono outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
                   />
-                  <span className="text-xs font-mono text-gray-400">.zip</span>
+                  <span className="text-xs font-mono text-zinc-400">.zip</span>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold uppercase tracking-wider text-gray-400">
+                  <span className="font-bold uppercase tracking-wider text-zinc-400">
                     Compression Level (0-9)
                   </span>
-                  <span className="font-mono text-rose-400 font-bold">{compressionLevel}</span>
+                  <span className="font-mono text-zinc-100 font-bold">{compressionLevel}</span>
                 </div>
                 <input
                   type="range"
@@ -246,30 +246,30 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                   max="9"
                   value={compressionLevel}
                   onChange={(e) => setCompressionLevel(Number(e.target.value) as any)}
-                  className="w-full accent-rose-500 bg-gray-800 h-2 rounded-lg cursor-pointer"
+                  className="w-full accent-white bg-zinc-800 h-2 rounded-lg cursor-pointer"
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-gray-900 border border-gray-800 text-xs text-gray-400 flex items-center gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-400 flex items-center gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-zinc-300 shrink-0" />
                 <span>Zip-slip path traversal and archive bomb protection enabled.</span>
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-3 pt-2 border-t border-gray-800">
+              <div className="space-y-3 pt-2 border-t border-zinc-800">
                 <button
                   disabled={isZipping || filesToZip.length === 0}
                   onClick={handleCreateZip}
-                  className="w-full py-3.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:bg-rose-900 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-zinc-100 hover:bg-white disabled:bg-zinc-800 text-zinc-950 disabled:text-zinc-500 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                 >
                   {isZipping ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-zinc-900" />
                       <span>Creating ZIP...</span>
                     </>
                   ) : (
                     <>
-                      <FolderArchive className="w-4 h-4" />
+                      <FolderArchive className="w-4 h-4 text-zinc-900" />
                       <span>Build ZIP Archive</span>
                     </>
                   )}
@@ -278,7 +278,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                 {createdZipBlob && (
                   <button
                     onClick={() => ExportManager.download(createdZipBlob, `${archiveName}.zip`)}
-                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider shadow flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-white border border-zinc-700 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download {archiveName}.zip ({(createdZipBlob.size / 1024).toFixed(1)} KB)</span>
@@ -294,7 +294,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
           {!zipToExtract ? (
             <div
               onClick={() => fileInputExtractRef.current?.click()}
-              className="glass-panel border-2 border-dashed border-gray-700 hover:border-rose-500 rounded-3xl p-16 text-center cursor-pointer transition-all"
+              className="glass-panel border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-[#141418] group"
             >
               <input
                 ref={fileInputExtractRef}
@@ -307,18 +307,20 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                   }
                 }}
               />
-              <Archive className="w-12 h-12 text-rose-400 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-white">Select a ZIP Archive to Extract</h3>
-              <p className="text-xs text-gray-400 mt-1">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
+                <Archive className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg font-bold text-zinc-100">Select a ZIP Archive to Extract</h3>
+              <p className="text-xs text-zinc-400 mt-1">
                 Safely inspect and extract files without risk of directory traversal.
               </p>
             </div>
           ) : (
             <div className="glass-panel rounded-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
                 <div>
-                  <h4 className="text-sm font-bold text-white">{zipToExtract.name}</h4>
-                  <p className="text-xs text-gray-400">
+                  <h4 className="text-sm font-bold text-zinc-100">{zipToExtract.name}</h4>
+                  <p className="text-xs text-zinc-400">
                     {extractedEntries.length} extracted files (
                     {(
                       extractedEntries.reduce((acc, e) => acc + e.data.length, 0) /
@@ -334,7 +336,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                     setExtractedEntries([]);
                     onClearFile?.();
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-gray-800 text-xs text-gray-400 hover:text-white"
+                  className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 transition active:scale-[0.98]"
                 >
                   Close Archive
                 </button>
@@ -344,13 +346,13 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                 {extractedEntries.map((entry, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-xl bg-gray-900 border border-gray-800 text-xs"
+                    className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs hover:border-zinc-700 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <FileCode className="w-4 h-4 text-emerald-400" />
+                      <FileCode className="w-4 h-4 text-zinc-400" />
                       <div>
-                        <p className="text-white font-medium">{entry.path}</p>
-                        <p className="text-[10px] text-gray-400 font-mono">
+                        <p className="text-zinc-100 font-medium">{entry.path}</p>
+                        <p className="text-[10px] text-zinc-500 font-mono">
                           {(entry.data.length / 1024).toFixed(1)} KB
                         </p>
                       </div>
@@ -361,7 +363,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                         const blob = new Blob([entry.data as any]);
                         ExportManager.download(blob, entry.path);
                       }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-200"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-xs text-zinc-200 border border-zinc-700/60 transition active:scale-95"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download</span>

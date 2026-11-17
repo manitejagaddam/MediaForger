@@ -42,21 +42,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-64 border-r border-gray-800 bg-[#0d121f] flex flex-col justify-between shrink-0 h-screen select-none">
+    <aside className="w-64 border-r border-[#1e1e24] bg-[#0c0c0f] flex flex-col justify-between shrink-0 h-screen select-none">
       <div>
         {/* Brand */}
-        <div className="h-16 flex items-center px-6 gap-3 border-b border-gray-800/80">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <Cpu className="w-5 h-5 text-white" />
+        <div className="h-16 flex items-center px-6 gap-3 border-b border-[#1e1e24]">
+          <div className="w-9 h-9 rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center text-zinc-100 shadow-sm">
+            <Cpu className="w-4 h-4 text-zinc-200" />
           </div>
           <div>
-            <h1 className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
+            <h1 className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
               MediaForge
-              <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700/80">
                 Local
               </span>
             </h1>
-            <p className="text-[11px] text-gray-400">Zero-Egress Studio</p>
+            <p className="text-[11px] text-zinc-500 font-medium">Privacy-First Engine</p>
           </div>
         </div>
 
@@ -69,13 +69,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 ${
                   isActive
-                    ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 shadow-sm font-semibold'
-                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 border border-transparent'
+                    ? 'bg-zinc-800/90 text-white border border-zinc-700/80 shadow-sm font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border border-transparent hover:border-zinc-800/50'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-gray-400'}`} />
+                <Icon
+                  className={`w-4 h-4 transition-colors ${
+                    isActive ? 'text-zinc-100' : 'text-zinc-500'
+                  }`}
+                />
                 <span>{item.label}</span>
               </button>
             );
@@ -84,26 +88,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer Status Panel */}
-      <div className="p-4 border-t border-gray-800/80 bg-[#090d16] space-y-3">
+      <div className="p-4 border-t border-[#1e1e24] bg-[#0a0a0c] space-y-3">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="flex items-center gap-2 text-emerald-400 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            100% Local Engine
+          <span className="flex items-center gap-2 text-zinc-300 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            100% On-Device
           </span>
-          <span className="text-gray-400 text-[10px]">No Cloud</span>
+          <span className="text-zinc-500 text-[10px] font-mono">Zero Egress</span>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-gray-900/60 border border-gray-800 text-[11px] space-y-1">
-          <div className="flex items-center justify-between text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <HardDrive className="w-3.5 h-3.5 text-gray-400" />
-              IndexedDB & OPFS
+        <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/70 text-[11px] space-y-1.5">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="flex items-center gap-1.5 text-zinc-400">
+              <HardDrive className="w-3.5 h-3.5 text-zinc-500" />
+              Local Storage
             </span>
-            <span className="font-mono text-gray-300 font-semibold">{storageUsageMb.toFixed(1)} MB</span>
+            <span className="font-mono text-zinc-300 font-semibold">{storageUsageMb.toFixed(1)} MB</span>
           </div>
-          <div className="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+          <div className="w-full bg-zinc-800/80 h-1 rounded-full overflow-hidden">
             <div
-              className="bg-blue-500 h-full rounded-full transition-all duration-500"
+              className="bg-zinc-400 h-full rounded-full transition-all duration-300"
               style={{ width: `${Math.min(100, Math.max(5, (storageUsageMb / 100) * 100))}%` }}
             />
           </div>
@@ -112,4 +116,3 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
-

@@ -221,7 +221,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
       {!file ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="glass-panel border-2 border-dashed border-gray-700 hover:border-violet-500 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-gray-900/50"
+          className="glass-panel border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-[#141418] group"
         >
           <input
             ref={fileInputRef}
@@ -234,11 +234,11 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-violet-600/15 border border-violet-500/30 text-violet-400 flex items-center justify-center shadow-lg shadow-violet-500/10 mb-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
             <Music className="w-8 h-8" />
           </div>
-          <h3 className="text-xl font-bold text-white tracking-tight">Select an Audio Track to Forge</h3>
-          <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select an Audio Track to Forge</h3>
+          <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">
             Supports MP3, WAV, FLAC, OGG, Opus, AAC, M4A. Fast forward, rewind, waveform seek, normalize, trim, and export to MP3 or WAV.
           </p>
         </div>
@@ -247,14 +247,14 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
           {/* Waveform & Playback Panel (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             <div className="glass-panel rounded-2xl p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-4">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold text-xs uppercase font-mono">
+                  <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-200 flex items-center justify-center font-bold text-xs uppercase font-mono">
                     {inspection?.detectedFormat || 'AUD'}
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white truncate max-w-sm">{file.name}</h4>
-                    <p className="text-[11px] text-gray-400">
+                    <h4 className="text-xs font-bold text-zinc-100 truncate max-w-sm">{file.name}</h4>
+                    <p className="text-[11px] text-zinc-400">
                       {duration.toFixed(1)}s • {audioBuffer?.sampleRate} Hz •{' '}
                       {audioBuffer?.numberOfChannels === 1 ? 'Mono' : 'Stereo'} •{' '}
                       {(file.size / (1024 * 1024)).toFixed(2)} MB
@@ -269,17 +269,17 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                     setOutputResult(null);
                     onClearFile?.();
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
+                  className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 transition active:scale-[0.98]"
                 >
                   Change Audio
                 </button>
               </div>
 
               {/* Waveform Visualizer with Click-To-Seek */}
-              <div className="p-6 rounded-xl bg-[#080c14] border border-gray-800/80 space-y-5 select-none">
-                <div className="flex items-center justify-between text-[11px] text-gray-400">
+              <div className="p-6 rounded-xl bg-[#09090c] border border-zinc-800/80 space-y-5 select-none">
+                <div className="flex items-center justify-between text-[11px] text-zinc-400">
                   <span>Interactive Waveform (Click to Seek)</span>
-                  <span className="font-mono text-violet-400 font-semibold">
+                  <span className="font-mono text-zinc-200 font-semibold">
                     {currentTime.toFixed(1)}s / {duration.toFixed(1)}s
                   </span>
                 </div>
@@ -297,7 +297,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                         className="flex-1 rounded-full transition-all duration-75 group-hover:opacity-90"
                         style={{
                           height: `${Math.max(8, peak * 100)}%`,
-                          backgroundColor: isPlayed ? '#8B5CF6' : '#374151',
+                          backgroundColor: isPlayed ? '#f4f4f5' : '#27272a',
                         }}
                       />
                     );
@@ -312,7 +312,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                   step="0.05"
                   value={currentTime}
                   onChange={(e) => handleSeek(Number(e.target.value))}
-                  className="w-full accent-violet-500 bg-gray-800 h-2 rounded-lg cursor-pointer"
+                  className="w-full accent-white bg-zinc-800 h-2 rounded-lg cursor-pointer"
                 />
 
                 {/* Player Controls Bar (Rewind, Play/Pause, Fast Forward, Speed, Volume) */}
@@ -321,7 +321,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                     {/* Rewind 10s */}
                     <button
                       onClick={() => skipRelative(-10)}
-                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                       title="Rewind 10 seconds"
                     >
                       <RotateCcw className="w-4 h-4" />
@@ -329,7 +329,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                     {/* Rewind 5s */}
                     <button
                       onClick={() => skipRelative(-5)}
-                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                       title="Rewind 5 seconds"
                     >
                       <Rewind className="w-4 h-4" />
@@ -338,7 +338,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                     {/* Play / Pause */}
                     <button
                       onClick={togglePlay}
-                      className="w-11 h-11 rounded-full bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-lg shadow-violet-600/30 transition cursor-pointer"
+                      className="w-11 h-11 rounded-full bg-zinc-100 hover:bg-white text-zinc-950 flex items-center justify-center shadow-sm transition active:scale-95 cursor-pointer"
                     >
                       {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
                     </button>
@@ -346,7 +346,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                     {/* Fast Forward 5s */}
                     <button
                       onClick={() => skipRelative(5)}
-                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                       title="Fast Forward 5 seconds"
                     >
                       <FastForward className="w-4 h-4" />
@@ -354,7 +354,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                     {/* Fast Forward 10s */}
                     <button
                       onClick={() => skipRelative(10)}
-                      className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+                      className="p-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-750 transition active:scale-95"
                       title="Fast Forward 10 seconds"
                     >
                       <RotateCw className="w-4 h-4" />
@@ -363,15 +363,15 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
 
                   {/* Speed Selector */}
                   <div className="flex items-center gap-1.5 text-xs">
-                    <span className="text-gray-400 text-[10px]">Speed:</span>
+                    <span className="text-zinc-500 text-[10px]">Speed:</span>
                     {[0.5, 1.0, 1.25, 1.5, 2.0].map((rate) => (
                       <button
                         key={rate}
                         onClick={() => handlePlaybackRateChange(rate)}
-                        className={`px-2 py-1 rounded text-[10px] font-mono font-semibold transition ${
+                        className={`px-2 py-1 rounded-lg text-[10px] font-mono font-semibold transition active:scale-95 ${
                           playbackRate === rate
-                            ? 'bg-violet-600 text-white'
-                            : 'bg-gray-800 text-gray-400 hover:text-white'
+                            ? 'bg-zinc-800 text-white border border-zinc-700'
+                            : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-transparent'
                         }`}
                       >
                         {rate}x
@@ -383,10 +383,10 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                   <div className="flex items-center gap-2">
                     <button
                       onClick={toggleMute}
-                      className="text-gray-400 hover:text-white p-1"
+                      className="text-zinc-400 hover:text-zinc-100 p-1 transition"
                       title={isMuted ? 'Unmute' : 'Mute'}
                     >
-                      {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4" />}
+                      {isMuted ? <VolumeX className="w-4 h-4 text-zinc-400" /> : <Volume2 className="w-4 h-4" />}
                     </button>
                     <input
                       type="range"
@@ -395,7 +395,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                       step="0.05"
                       value={isMuted ? 0 : volume}
                       onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                      className="w-20 accent-violet-500 bg-gray-800 h-1.5 rounded cursor-pointer"
+                      className="w-20 accent-white bg-zinc-800 h-1.5 rounded cursor-pointer"
                     />
                   </div>
                 </div>
@@ -403,22 +403,22 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
 
               {/* Output Result Card */}
               {outputResult && (
-                <div className="p-4 rounded-xl bg-gray-900/90 border border-violet-500/40 flex items-center justify-between text-xs animate-fadeIn">
+                <div className="p-4 rounded-xl bg-zinc-900/90 border border-zinc-750 flex items-center justify-between text-xs animate-fadeIn">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                       Conversion Complete ({outputResult.format.toUpperCase()})
                     </span>
-                    <div className="text-white font-mono mt-1">
+                    <div className="text-zinc-200 font-mono mt-1">
                       Duration: {outputResult.durationSeconds.toFixed(1)}s •{' '}
                       {outputResult.channels === 1 ? 'Mono' : 'Stereo'} • {outputResult.sampleRate} Hz
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-violet-400 font-mono font-bold text-sm">
+                    <span className="text-zinc-100 font-mono font-bold text-sm">
                       {(outputResult.sizeBytes / 1024).toFixed(1)} KB
                     </span>
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-[10px] text-zinc-500">
                       {Math.max(
                         0,
                         Math.round(((file.size - outputResult.sizeBytes) / file.size) * 100)
@@ -436,31 +436,31 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
             <div className="glass-panel rounded-2xl p-6 space-y-6">
               {/* Output Format Selector */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                   Target Audio Format
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setOutputFormat('mp3')}
-                    className={`p-3 rounded-xl border text-left transition ${
+                    className={`p-3 rounded-xl border text-left transition-all ${
                       outputFormat === 'mp3'
-                        ? 'border-violet-500 bg-violet-500/10 text-white font-semibold'
-                        : 'border-gray-800 bg-gray-900 text-gray-400'
+                        ? 'border-zinc-300 bg-zinc-800/90 text-white font-semibold shadow-sm'
+                        : 'border-zinc-800/80 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                     }`}
                   >
                     <div className="text-xs font-mono font-bold">MP3</div>
-                    <div className="text-[10px] text-gray-400">LAME Encoded Audio</div>
+                    <div className="text-[10px] text-zinc-400">LAME Encoded Audio</div>
                   </button>
                   <button
                     onClick={() => setOutputFormat('wav')}
-                    className={`p-3 rounded-xl border text-left transition ${
+                    className={`p-3 rounded-xl border text-left transition-all ${
                       outputFormat === 'wav'
-                        ? 'border-violet-500 bg-violet-500/10 text-white font-semibold'
-                        : 'border-gray-800 bg-gray-900 text-gray-400'
+                        ? 'border-zinc-300 bg-zinc-800/90 text-white font-semibold shadow-sm'
+                        : 'border-zinc-800/80 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                     }`}
                   >
                     <div className="text-xs font-mono font-bold">WAV</div>
-                    <div className="text-[10px] text-gray-400">Lossless 16-bit PCM</div>
+                    <div className="text-[10px] text-zinc-400">Lossless 16-bit PCM</div>
                   </button>
                 </div>
               </div>
@@ -469,20 +469,20 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
               {outputFormat === 'mp3' && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold uppercase tracking-wider text-gray-400">
+                    <span className="font-bold uppercase tracking-wider text-zinc-400">
                       MP3 Bitrate
                     </span>
-                    <span className="font-mono text-violet-400 font-bold">{bitrate} kbps</span>
+                    <span className="font-mono text-zinc-100 font-bold">{bitrate} kbps</span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
                     {[128, 192, 256, 320].map((br) => (
                       <button
                         key={br}
                         onClick={() => setBitrate(br)}
-                        className={`py-1.5 rounded-lg border text-xs font-mono font-semibold transition ${
+                        className={`py-1.5 rounded-lg border text-xs font-mono font-semibold transition active:scale-95 ${
                           bitrate === br
-                            ? 'border-violet-500 bg-violet-500/15 text-violet-400'
-                            : 'border-gray-800 bg-gray-900 text-gray-400'
+                            ? 'border-zinc-300 bg-zinc-800 text-white'
+                            : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                         }`}
                       >
                         {br}k
@@ -494,13 +494,13 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
 
               {/* Trimming Controls */}
               <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-violet-400" />
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-zinc-300" />
                   Trim Audio (Seconds)
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] text-gray-400 block mb-1">Start (sec)</label>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Start (sec)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -508,11 +508,11 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                       max={duration}
                       value={trimStart}
                       onChange={(e) => setTrimStart(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white font-mono outline-none"
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-400 block mb-1">End (sec)</label>
+                    <label className="text-[10px] text-zinc-400 block mb-1">End (sec)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -520,47 +520,47 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                       max={duration}
                       value={trimEnd}
                       onChange={(e) => setTrimEnd(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white font-mono outline-none"
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Channel & Volume Options */}
-              <div className="space-y-3 pt-2 border-t border-gray-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
+              <div className="space-y-3 pt-2 border-t border-zinc-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block">
                   Channels & Dynamics
                 </span>
 
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setChannels(2)}
-                    className={`py-2 rounded-xl border text-xs font-medium transition ${
+                    className={`py-2 rounded-xl border text-xs font-medium transition active:scale-[0.98] ${
                       channels === 2
-                        ? 'border-violet-500 bg-violet-500/10 text-violet-400'
-                        : 'border-gray-800 bg-gray-900 text-gray-400'
+                        ? 'border-zinc-300 bg-zinc-800 text-white'
+                        : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                     }`}
                   >
                     Stereo (2 Ch)
                   </button>
                   <button
                     onClick={() => setChannels(1)}
-                    className={`py-2 rounded-xl border text-xs font-medium transition ${
+                    className={`py-2 rounded-xl border text-xs font-medium transition active:scale-[0.98] ${
                       channels === 1
-                        ? 'border-violet-500 bg-violet-500/10 text-violet-400'
-                        : 'border-gray-800 bg-gray-900 text-gray-400'
+                        ? 'border-zinc-300 bg-zinc-800 text-white'
+                        : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                     }`}
                   >
                     Mono (1 Ch)
                   </button>
                 </div>
 
-                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 cursor-pointer">
+                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300 cursor-pointer hover:border-zinc-700 transition">
                   <input
                     type="checkbox"
                     checked={normalizeVolume}
                     onChange={(e) => setNormalizeVolume(e.target.checked)}
-                    className="rounded border-gray-700 text-violet-500"
+                    className="rounded border-zinc-700 bg-zinc-900 text-zinc-200"
                   />
                   <span>Normalize Peak Volume to -0.5 dB</span>
                 </label>
@@ -568,45 +568,45 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                 {/* Fade in / Fade out */}
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div>
-                    <label className="text-[10px] text-gray-400 block mb-1">Fade In (s)</label>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Fade In (s)</label>
                     <input
                       type="number"
                       step="0.5"
                       min="0"
                       value={fadeIn}
                       onChange={(e) => setFadeIn(Number(e.target.value))}
-                      className="w-full px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-800 text-xs text-white font-mono"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-400 block mb-1">Fade Out (s)</label>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Fade Out (s)</label>
                     <input
                       type="number"
                       step="0.5"
                       min="0"
                       value={fadeOut}
                       onChange={(e) => setFadeOut(Number(e.target.value))}
-                      className="w-full px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-800 text-xs text-white font-mono"
+                      className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-gray-800 space-y-3">
+              <div className="pt-4 border-t border-zinc-800 space-y-3">
                 <button
                   disabled={isProcessing}
                   onClick={executeConversion}
-                  className="w-full py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:bg-violet-800 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-zinc-100 hover:bg-white disabled:bg-zinc-800 text-zinc-950 disabled:text-zinc-500 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                 >
                   {isProcessing ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-zinc-900" />
                       <span>Encoding to {outputFormat.toUpperCase()}...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
+                      <Sparkles className="w-4 h-4 text-zinc-900" />
                       <span>Convert to {outputFormat.toUpperCase()}</span>
                     </>
                   )}
@@ -615,7 +615,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
                 {outputResult && (
                   <button
                     onClick={handleDownload}
-                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-white border border-zinc-700 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download {outputResult.format.toUpperCase()} ({(outputResult.sizeBytes / 1024).toFixed(1)} KB)</span>

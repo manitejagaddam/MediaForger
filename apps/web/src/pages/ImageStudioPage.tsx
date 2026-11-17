@@ -211,7 +211,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
       {!file ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="glass-panel border-2 border-dashed border-gray-700 hover:border-blue-500 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-gray-900/50"
+          className="glass-panel border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-[#141418] group"
         >
           <input
             ref={fileInputRef}
@@ -224,11 +224,11 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/10 mb-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
             <ImageIcon className="w-8 h-8" />
           </div>
-          <h3 className="text-xl font-bold text-white tracking-tight">Select an Image to Forge</h3>
-          <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select an Image to Forge</h3>
+          <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">
             Supports JPEG, PNG, WebP, AVIF, BMP, TIFF, SVG, and animated GIFs. Everything is processed directly in your browser.
           </p>
         </div>
@@ -237,14 +237,14 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
           {/* Left Column: Visual Preview & Live Comparison (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             <div className="glass-panel rounded-2xl p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-mono font-bold text-xs uppercase">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 flex items-center justify-center font-mono font-bold text-xs uppercase">
                     {inspection?.detectedFormat || 'IMG'}
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white truncate max-w-xs">{file.name}</h4>
-                    <p className="text-[11px] text-gray-400">
+                    <h4 className="text-xs font-bold text-zinc-100 truncate max-w-xs">{file.name}</h4>
+                    <p className="text-[11px] text-zinc-400">
                       {inspection?.width} × {inspection?.height} px • {(file.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
@@ -253,10 +253,10 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleCopyBase64}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-xs text-zinc-300 hover:text-white border border-zinc-700/60 transition active:scale-[0.98]"
                     title="Copy Base64 Data URL"
                   >
-                    {copiedBase64 ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedBase64 ? <Check className="w-3.5 h-3.5 text-zinc-100" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedBase64 ? 'Copied' : 'Base64'}</span>
                   </button>
                   <button
@@ -265,7 +265,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                       setOutputResult(null);
                       onClearFile?.();
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
+                    className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 transition active:scale-[0.98]"
                   >
                     Change File
                   </button>
@@ -273,11 +273,11 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
               </div>
 
               {/* Image Preview Canvas */}
-              <div className="relative min-h-[360px] max-h-[500px] rounded-xl bg-[#080c14] border border-gray-800/80 flex items-center justify-center overflow-hidden p-4 group">
+              <div className="relative min-h-[360px] max-h-[500px] rounded-xl bg-[#09090c] border border-zinc-800/80 flex items-center justify-center overflow-hidden p-4 group">
                 <img
                   src={outputUrl || inputUrl || ''}
                   alt="Preview"
-                  className="max-h-[460px] max-w-full object-contain rounded-lg shadow-2xl transition-all"
+                  className="max-h-[460px] max-w-full object-contain rounded-lg transition-all"
                   style={{
                     filter: `grayscale(${grayscale ? 1 : 0}) brightness(${100 + brightness}%) contrast(${100 + contrast}%)`,
                     transform: `rotate(${rotation}deg) scaleX(${flipH ? -1 : 1}) scaleY(${flipV ? -1 : 1})`,
@@ -285,7 +285,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                 />
 
                 {outputUrl && (
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-emerald-500/90 text-white text-[11px] font-semibold tracking-wide uppercase shadow">
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-zinc-800/95 border border-zinc-700 text-zinc-200 text-[11px] font-semibold tracking-wide uppercase shadow">
                     Processed Output
                   </div>
                 )}
@@ -293,29 +293,29 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
 
               {/* Before/After Size Comparison Card */}
               {outputResult && (
-                <div className="p-4 rounded-xl bg-gray-900/90 border border-emerald-500/40 flex items-center justify-between text-xs animate-fadeIn">
+                <div className="p-4 rounded-xl bg-zinc-900/90 border border-zinc-700/80 flex items-center justify-between text-xs animate-fadeIn">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                       Conversion Result
                     </span>
-                    <div className="flex items-center gap-3 text-white font-mono mt-1">
+                    <div className="flex items-center gap-3 text-zinc-100 font-mono mt-1">
                       <span>{(file.size / 1024).toFixed(1)} KB</span>
-                      <span>→</span>
-                      <span className="text-emerald-400 font-bold">
+                      <span className="text-zinc-500">→</span>
+                      <span className="text-white font-bold">
                         {(outputResult.sizeBytes / 1024).toFixed(1)} KB
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-emerald-400 font-bold text-sm">
+                    <span className="text-zinc-100 font-mono font-bold text-sm">
                       {Math.max(
                         0,
                         Math.round(((file.size - outputResult.sizeBytes) / file.size) * 100)
                       )}
                       % Saved
                     </span>
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-[10px] text-zinc-400">
                       {outputResult.width} × {outputResult.height} px
                     </p>
                   </div>
@@ -329,32 +329,32 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
             <div className="glass-panel rounded-2xl p-6 space-y-6">
               {/* Presets Row */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-zinc-300" />
                   Quick Presets
                 </label>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => applyPreset('img-web-balanced')}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-[11px] text-gray-300 font-medium transition"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-[11px] text-zinc-300 hover:text-white font-medium border border-zinc-750 transition active:scale-[0.98]"
                   >
                     Web Balanced
                   </button>
                   <button
                     onClick={() => applyPreset('img-max-compression')}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-[11px] text-gray-300 font-medium transition"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-[11px] text-zinc-300 hover:text-white font-medium border border-zinc-750 transition active:scale-[0.98]"
                   >
                     Max Compression
                   </button>
                   <button
                     onClick={() => applyPreset('img-social-ig-square')}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-[11px] text-gray-300 font-medium transition"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-[11px] text-zinc-300 hover:text-white font-medium border border-zinc-750 transition active:scale-[0.98]"
                   >
                     Instagram 1:1
                   </button>
                   <button
                     onClick={() => applyPreset('img-social-yt-thumb')}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-[11px] text-gray-300 font-medium transition"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-[11px] text-zinc-300 hover:text-white font-medium border border-zinc-750 transition active:scale-[0.98]"
                   >
                     YouTube 16:9
                   </button>
@@ -363,7 +363,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
 
               {/* Target Format Selector */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                   Target Output Format
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -373,12 +373,12 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                       onClick={() => setOutputFormat(fmt.id)}
                       className={`p-3 rounded-xl border text-left transition-all ${
                         outputFormat === fmt.id
-                          ? 'border-blue-500 bg-blue-500/10 text-white font-semibold'
-                          : 'border-gray-800 bg-gray-900/50 text-gray-400 hover:border-gray-700'
+                          ? 'border-zinc-300 bg-zinc-800/90 text-white font-semibold shadow-sm'
+                          : 'border-zinc-800/80 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                       }`}
                     >
                       <div className="text-xs uppercase font-mono font-bold">{fmt.id}</div>
-                      <div className="text-[10px] text-gray-400 truncate mt-0.5">{fmt.name}</div>
+                      <div className="text-[10px] text-zinc-400 truncate mt-0.5">{fmt.name}</div>
                     </button>
                   ))}
                 </div>
@@ -388,10 +388,10 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
               {outputFormat !== 'png' && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold uppercase tracking-wider text-gray-400">
+                    <span className="font-bold uppercase tracking-wider text-zinc-400">
                       Compression Quality
                     </span>
-                    <span className="font-mono text-blue-400 font-bold">{quality}%</span>
+                    <span className="font-mono text-zinc-100 font-bold">{quality}%</span>
                   </div>
                   <input
                     type="range"
@@ -399,9 +399,9 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                     max="100"
                     value={quality}
                     onChange={(e) => setQuality(Number(e.target.value))}
-                    className="w-full accent-blue-500 bg-gray-800 h-2 rounded-lg cursor-pointer"
+                    className="w-full accent-white bg-zinc-800 h-2 rounded-lg cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-gray-400">
+                  <div className="flex justify-between text-[10px] text-zinc-500">
                     <span>Smallest File (10%)</span>
                     <span>Lossless Quality (100%)</span>
                   </div>
@@ -411,22 +411,22 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
               {/* Dimensions Resize */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold uppercase tracking-wider text-gray-400">
+                  <span className="font-bold uppercase tracking-wider text-zinc-400">
                     Resize Dimensions
                   </span>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-gray-400">
+                  <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-zinc-400 hover:text-zinc-200 transition">
                     <input
                       type="checkbox"
                       checked={maintainAspect}
                       onChange={(e) => setMaintainAspect(e.target.checked)}
-                      className="rounded border-gray-700 text-blue-500 focus:ring-0"
+                      className="rounded border-zinc-700 bg-zinc-900 text-zinc-200 focus:ring-0"
                     />
                     <span>Lock Aspect Ratio</span>
                   </label>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] text-gray-400 block mb-1">Width (px)</label>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Width (px)</label>
                     <input
                       type="number"
                       value={width}
@@ -437,11 +437,11 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                           height
                         )
                       }
-                      className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white font-mono focus:border-blue-500 outline-none"
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-400 block mb-1">Height (px)</label>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Height (px)</label>
                     <input
                       type="number"
                       value={height}
@@ -452,31 +452,31 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                           e.target.value ? Number(e.target.value) : ''
                         )
                       }
-                      className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white font-mono focus:border-blue-500 outline-none"
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Transform & Filter Controls */}
-              <div className="space-y-3 pt-2 border-t border-gray-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
+              <div className="space-y-3 pt-2 border-t border-zinc-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block">
                   Transformations & Filters
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setRotation((r) => (r + 90) % 360)}
-                    className="flex-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 font-medium flex items-center justify-center gap-1.5 transition"
+                    className="flex-1 py-2 rounded-xl bg-zinc-850 hover:bg-zinc-800 text-xs text-zinc-300 hover:text-white border border-zinc-750 font-medium flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
                   >
                     <RotateCw className="w-3.5 h-3.5" />
                     <span>Rotate ({rotation}°)</span>
                   </button>
                   <button
                     onClick={() => setFlipH((f) => !f)}
-                    className={`flex-1 py-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition ${
+                    className={`flex-1 py-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition active:scale-[0.98] ${
                       flipH
-                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                        : 'border-gray-800 bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        ? 'border-zinc-300 bg-zinc-800 text-white'
+                        : 'border-zinc-750 bg-zinc-850 text-zinc-300 hover:bg-zinc-800 hover:text-white'
                     }`}
                   >
                     <FlipHorizontal className="w-3.5 h-3.5" />
@@ -484,10 +484,10 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                   </button>
                   <button
                     onClick={() => setFlipV((f) => !f)}
-                    className={`flex-1 py-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition ${
+                    className={`flex-1 py-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition active:scale-[0.98] ${
                       flipV
-                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                        : 'border-gray-800 bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        ? 'border-zinc-300 bg-zinc-800 text-white'
+                        : 'border-zinc-750 bg-zinc-850 text-zinc-300 hover:bg-zinc-800 hover:text-white'
                     }`}
                   >
                     <FlipVertical className="w-3.5 h-3.5" />
@@ -496,21 +496,21 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-1">
-                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 cursor-pointer">
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300 cursor-pointer hover:border-zinc-700 transition">
                     <input
                       type="checkbox"
                       checked={grayscale}
                       onChange={(e) => setGrayscale(e.target.checked)}
-                      className="rounded border-gray-700 text-blue-500"
+                      className="rounded border-zinc-700 bg-zinc-900 text-zinc-200"
                     />
                     <span>Grayscale</span>
                   </label>
-                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 cursor-pointer">
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300 cursor-pointer hover:border-zinc-700 transition">
                     <input
                       type="checkbox"
                       checked={stripExif}
                       onChange={(e) => setStripExif(e.target.checked)}
-                      className="rounded border-gray-700 text-blue-500"
+                      className="rounded border-zinc-700 bg-zinc-900 text-zinc-200"
                     />
                     <span>Strip EXIF Privacy</span>
                   </label>
@@ -518,32 +518,32 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
 
                 {/* Watermark Input */}
                 <div>
-                  <label className="text-[10px] text-gray-400 block mb-1">Watermark Text (Optional)</label>
+                  <label className="text-[10px] text-zinc-400 block mb-1">Watermark Text (Optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. © 2026 MediaForge"
                     value={watermarkText}
                     onChange={(e) => setWatermarkText(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white placeholder-gray-600 focus:border-blue-500 outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-600 focus:border-zinc-500 outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Action Buttons: Convert & Download */}
-              <div className="pt-4 border-t border-gray-800 space-y-3">
+              <div className="pt-4 border-t border-zinc-800 space-y-3">
                 <button
                   disabled={isProcessing}
                   onClick={executeConversion}
-                  className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-zinc-100 hover:bg-white disabled:bg-zinc-800 text-zinc-950 disabled:text-zinc-500 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                 >
                   {isProcessing ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-zinc-900" />
                       <span>Processing ({Math.round(progress * 100)}%)...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
+                      <Sparkles className="w-4 h-4 text-zinc-900" />
                       <span>Forge Image</span>
                     </>
                   )}
@@ -552,7 +552,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                 {outputResult && (
                   <button
                     onClick={handleDownload}
-                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-white border border-zinc-700 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download {outputResult.format.toUpperCase()}</span>

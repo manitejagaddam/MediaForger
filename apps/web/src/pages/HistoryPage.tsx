@@ -43,48 +43,48 @@ export const HistoryPage: React.FC = () => {
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
       {/* Analytics Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-panel rounded-2xl p-6">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+        <div className="glass-panel rounded-2xl p-6 transition-all hover:border-zinc-700/80">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
             Total Conversions
           </span>
           <p className="text-2xl font-extrabold text-white mt-1 font-mono">{history.length}</p>
-          <p className="text-[11px] text-gray-400 mt-1">Processed 100% locally on this device</p>
+          <p className="text-[11px] text-zinc-500 mt-1">Processed 100% locally on this device</p>
         </div>
 
-        <div className="glass-panel rounded-2xl p-6">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+        <div className="glass-panel rounded-2xl p-6 transition-all hover:border-zinc-700/80">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
             Data Processed
           </span>
-          <p className="text-2xl font-extrabold text-blue-400 mt-1 font-mono">
+          <p className="text-2xl font-extrabold text-zinc-100 mt-1 font-mono">
             {totalInputMb.toFixed(1)} MB
           </p>
-          <p className="text-[11px] text-gray-400 mt-1">Source file buffer throughput</p>
+          <p className="text-[11px] text-zinc-500 mt-1">Source file buffer throughput</p>
         </div>
 
-        <div className="glass-panel rounded-2xl p-6">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+        <div className="glass-panel rounded-2xl p-6 transition-all hover:border-zinc-700/80">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
             Storage Space Saved
           </span>
-          <p className="text-2xl font-extrabold text-emerald-400 mt-1 font-mono">
+          <p className="text-2xl font-extrabold text-zinc-100 mt-1 font-mono">
             {savedMb.toFixed(1)} MB
           </p>
-          <p className="text-[11px] text-gray-400 mt-1">Via local compression engines</p>
+          <p className="text-[11px] text-zinc-500 mt-1">Via local compression engines</p>
         </div>
       </div>
 
       {/* History Table */}
       <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-800 pb-4">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Filter:</span>
+        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 mr-1">Filter:</span>
             {['all', 'image', 'audio', 'video', 'document', 'archive'].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setFilter(cat)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium capitalize transition ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition active:scale-95 ${
                   filter === cat
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
+                    : 'bg-zinc-900/60 text-zinc-400 hover:text-white border border-transparent'
                 }`}
               >
                 {cat}
@@ -95,7 +95,7 @@ export const HistoryPage: React.FC = () => {
           {history.length > 0 && (
             <button
               onClick={handleClearHistory}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-400 transition"
+              className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition active:scale-95"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear History</span>
@@ -104,7 +104,7 @@ export const HistoryPage: React.FC = () => {
         </div>
 
         {filteredHistory.length === 0 ? (
-          <div className="p-16 text-center text-xs text-gray-400 border border-dashed border-gray-800 rounded-xl">
+          <div className="p-16 text-center text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
             No conversion records found in local IndexedDB.
           </div>
         ) : (
@@ -112,25 +112,25 @@ export const HistoryPage: React.FC = () => {
             {filteredHistory.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between p-4 rounded-xl bg-gray-900 border border-gray-800 text-xs"
+                className="flex items-center justify-between p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs hover:border-zinc-700 transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-mono font-bold text-xs flex items-center justify-center uppercase">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 font-mono font-bold text-xs flex items-center justify-center uppercase">
                     {item.outputFormat}
                   </div>
                   <div>
-                    <h5 className="font-semibold text-white truncate max-w-sm">{item.fileName}</h5>
-                    <p className="text-[11px] text-gray-400">
+                    <h5 className="font-semibold text-zinc-100 truncate max-w-sm">{item.fileName}</h5>
+                    <p className="text-[11px] text-zinc-400">
                       {item.inputFormat.toUpperCase()} → {item.outputFormat.toUpperCase()} • {item.durationMs}ms duration
                     </p>
                   </div>
                 </div>
 
                 <div className="text-right font-mono">
-                  <p className="text-emerald-400 font-bold">
+                  <p className="text-zinc-100 font-bold">
                     {(item.outputSizeBytes / 1024).toFixed(1)} KB
                   </p>
-                  <p className="text-[10px] text-gray-400">
+                  <p className="text-[10px] text-zinc-500">
                     from {(item.inputSizeBytes / 1024).toFixed(1)} KB (
                     {new Date(item.completedAt).toLocaleTimeString()})
                   </p>

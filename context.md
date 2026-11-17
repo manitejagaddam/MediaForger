@@ -65,8 +65,14 @@ stateDiagram-v2
 ## 4. Current Workspace State
 
 * **Active Phase**: Phase 1 through Phase 8 core delivery completed and verified.
+* **UI Theme Design System**: Fully overhauled to **Obsidian Dark** (Linear / Raycast / GitHub Dark inspired).
+  - Background: `#09090b`, Surface: `#111114`, Cards: `#141418`, Borders: `#222227`, Hover: `#27272a`.
+  - Zero gradients across the user interface.
+  - Monochromatic, eye-comfort dark palette with crisp `#f4f4f5` text and `#a1a1aa` muted indicators.
+  - Micro-animations: card hover physics (`-translate-y-0.5`), tactile button clicks (`active:scale-[0.98]`), animated tab transitions, smooth sliders.
+  - Complete consistency across all 11 studio & utility pages.
 * **Apps Built**:
-  - `apps/web`: Full SaaS React 19 + Vite 6 + Tailwind web app with all 11 studio pages, scoped per-studio file isolation, interactive AI Studio workspace (2x/4x Super-Resolution, IS-Net ONNX Deep Neural Background Removal & Replacement Studio with WebGPU/WASM, Eyedropper, Solid/Gradient/Bokeh/Image replacement, edge choke/expand, and drop shadows), audio/video scrubbing and controls, real MP3/WAV export, and PWA offline capability. Production build passed (`apps/web/dist`).
+  - `apps/web`: Full SaaS React 19 + Vite 6 + Tailwind web app with all 11 studio pages, scoped per-studio file isolation, interactive AI Studio workspace (2x/4x Super-Resolution, IS-Net ONNX Deep Neural Background Removal & Replacement Studio with WebGPU/WASM, Eyedropper, Solid/Studio Lighting/Bokeh/Image replacement, edge choke/expand, and drop shadows), audio/video scrubbing and controls, real MP3/WAV export, and PWA offline capability. Production build passed (`apps/web/dist`).
   - `apps/extension`: Chrome Manifest V3 extension with background service worker, offscreen processing document, popup, side panel, and context menus. Production build passed (`apps/extension/dist`).
 * **Shared Packages**: 15 `@mediaforge/*` packages compiled and linked.
 * **Automated Tests**: 7 Vitest test suites (29 unit tests) passing with 100% success rate.

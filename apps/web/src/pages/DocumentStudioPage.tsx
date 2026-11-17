@@ -116,7 +116,7 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
       {!file ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="glass-panel border-2 border-dashed border-gray-700 hover:border-emerald-500 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-gray-900/50"
+          className="glass-panel border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-[#141418] group"
         >
           <input
             ref={fileInputRef}
@@ -129,11 +129,11 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-600/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/10 mb-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
             <FileText className="w-8 h-8" />
           </div>
-          <h3 className="text-xl font-bold text-white tracking-tight">Select a Document or Data File</h3>
-          <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select a Document or Data File</h3>
+          <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">
             Convert CSV to JSON, JSON to CSV, normalize TXT line breaks. Fast, private, in-browser parsing.
           </p>
         </div>
@@ -142,14 +142,14 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
           {/* Left Column: Data Preview (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             <div className="glass-panel rounded-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs uppercase font-mono">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 flex items-center justify-center font-bold text-xs uppercase font-mono">
                     {inspection?.detectedFormat || 'DOC'}
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white truncate max-w-sm">{file.name}</h4>
-                    <p className="text-[11px] text-gray-400">{(file.size / 1024).toFixed(1)} KB</p>
+                    <h4 className="text-xs font-bold text-zinc-100 truncate max-w-sm">{file.name}</h4>
+                    <p className="text-[11px] text-zinc-400">{(file.size / 1024).toFixed(1)} KB</p>
                   </div>
                 </div>
 
@@ -162,7 +162,7 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
                     setInspection(null);
                     onClearFile?.();
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 hover:text-white transition"
+                  className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 transition active:scale-[0.98]"
                 >
                   Change File
                 </button>
@@ -170,10 +170,10 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
 
               {/* Input text preview */}
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                   Source Preview
                 </span>
-                <pre className="p-4 rounded-xl bg-[#080c14] border border-gray-800/80 text-[11px] font-mono text-gray-300 max-h-48 overflow-auto whitespace-pre-wrap select-all">
+                <pre className="p-4 rounded-xl bg-[#09090c] border border-zinc-800/80 text-[11px] font-mono text-zinc-300 max-h-48 overflow-auto whitespace-pre-wrap select-all">
                   {inputContent}
                 </pre>
               </div>
@@ -182,18 +182,18 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
               {outputContent && (
                 <div className="space-y-1 animate-fadeIn">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-300">
                       Converted Output Preview
                     </span>
                     <button
                       onClick={handleCopy}
-                      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white"
+                      className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition active:scale-95"
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? <Check className="w-3.5 h-3.5 text-zinc-100" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copied ? 'Copied' : 'Copy'}</span>
                     </button>
                   </div>
-                  <pre className="p-4 rounded-xl bg-gray-900 border border-emerald-500/40 text-[11px] font-mono text-emerald-300 max-h-60 overflow-auto whitespace-pre-wrap select-all">
+                  <pre className="p-4 rounded-xl bg-[#09090c] border border-zinc-700/80 text-[11px] font-mono text-zinc-200 max-h-60 overflow-auto whitespace-pre-wrap select-all">
                     {outputContent}
                   </pre>
                 </div>
@@ -205,44 +205,44 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
           <div className="lg:col-span-5 space-y-6">
             <div className="glass-panel rounded-2xl p-6 space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                   Target Format
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setTargetFormat('json')}
-                    className={`p-3 rounded-xl border text-left transition ${
+                    className={`p-3 rounded-xl border text-left transition-all ${
                       targetFormat === 'json'
-                        ? 'border-emerald-500 bg-emerald-500/10 text-white font-semibold'
-                        : 'border-gray-800 bg-gray-900 text-gray-400'
+                        ? 'border-zinc-300 bg-zinc-800/90 text-white font-semibold shadow-sm'
+                        : 'border-zinc-800/80 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                     }`}
                   >
                     <div className="text-xs font-mono font-bold">JSON</div>
-                    <div className="text-[10px] text-gray-400">Structured Objects</div>
+                    <div className="text-[10px] text-zinc-400">Structured Objects</div>
                   </button>
                   <button
                     onClick={() => setTargetFormat('csv')}
-                    className={`p-3 rounded-xl border text-left transition ${
+                    className={`p-3 rounded-xl border text-left transition-all ${
                       targetFormat === 'csv'
-                        ? 'border-emerald-500 bg-emerald-500/10 text-white font-semibold'
-                        : 'border-gray-800 bg-gray-900 text-gray-400'
+                        ? 'border-zinc-300 bg-zinc-800/90 text-white font-semibold shadow-sm'
+                        : 'border-zinc-800/80 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                     }`}
                   >
                     <div className="text-xs font-mono font-bold">CSV</div>
-                    <div className="text-[10px] text-gray-400">Spreadsheet Data</div>
+                    <div className="text-[10px] text-zinc-400">Spreadsheet Data</div>
                   </button>
                 </div>
               </div>
 
               {/* Delimiter */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                   CSV Delimiter
                 </label>
                 <select
                   value={delimiter}
                   onChange={(e) => setDelimiter(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 focus:border-zinc-500 outline-none transition"
                 >
                   <option value=",">Comma (,)</option>
                   <option value=";">Semicolon (;)</option>
@@ -253,32 +253,32 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
 
               {/* Pretty Print JSON */}
               {targetFormat === 'json' && (
-                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 cursor-pointer">
+                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300 cursor-pointer hover:border-zinc-700 transition">
                   <input
                     type="checkbox"
                     checked={prettyJson}
                     onChange={(e) => setPrettyJson(e.target.checked)}
-                    className="rounded border-gray-700 text-emerald-500"
+                    className="rounded border-zinc-700 bg-zinc-900 text-zinc-200"
                   />
                   <span>Format & Indent JSON (Pretty Print)</span>
                 </label>
               )}
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-gray-800 space-y-3">
+              <div className="pt-4 border-t border-zinc-800 space-y-3">
                 <button
                   disabled={isProcessing}
                   onClick={executeConversion}
-                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-zinc-100 hover:bg-white disabled:bg-zinc-800 text-zinc-950 disabled:text-zinc-500 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                 >
                   {isProcessing ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-zinc-900" />
                       <span>Parsing & Converting...</span>
                     </>
                   ) : (
                     <>
-                      <ArrowRightLeft className="w-4 h-4" />
+                      <ArrowRightLeft className="w-4 h-4 text-zinc-900" />
                       <span>Convert Document</span>
                     </>
                   )}
@@ -287,7 +287,7 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
                 {outputBlob && (
                   <button
                     onClick={handleDownload}
-                    className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-white border border-zinc-700 text-xs font-semibold tracking-wide shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download {targetFormat.toUpperCase()}</span>

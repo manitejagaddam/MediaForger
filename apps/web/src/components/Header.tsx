@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageId } from '../types';
-import { Shield, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Shield, CheckCircle2 } from 'lucide-react';
 
 interface HeaderProps {
   activePage: PageId;
@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ activePage }) => {
       subtitle: 'Secure ZIP compression & extraction with path traversal and bomb protection',
     },
     ai: {
-      title: 'AI Studio (Local ONNX)',
+      title: 'Neural AI Studio',
       subtitle: 'On-device neural super-resolution and alpha matte background removal',
     },
     batch: {
@@ -57,23 +57,22 @@ export const Header: React.FC<HeaderProps> = ({ activePage }) => {
   const current = titles[activePage] || titles.dashboard;
 
   return (
-    <header className="h-16 border-b border-gray-800 bg-[#0d121f]/90 backdrop-blur px-8 flex items-center justify-between shrink-0">
+    <header className="h-16 border-b border-[#1e1e24] bg-[#0c0c0f]/95 backdrop-blur px-8 flex items-center justify-between shrink-0">
       <div>
-        <h2 className="text-base font-bold text-white tracking-tight">{current.title}</h2>
-        <p className="text-xs text-gray-400">{current.subtitle}</p>
+        <h2 className="text-sm font-semibold text-white tracking-tight">{current.title}</h2>
+        <p className="text-xs text-zinc-400">{current.subtitle}</p>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium">
-          <Shield className="w-3.5 h-3.5 text-blue-400" />
-          <span>Private & Offline</span>
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium">
+          <Shield className="w-3.5 h-3.5 text-zinc-400" />
+          <span>Local & Offline</span>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Web Workers Active</span>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium">
+          <CheckCircle2 className="w-3.5 h-3.5 text-zinc-400" />
+          <span>Workers Ready</span>
         </div>
       </div>
     </header>
   );
 };
-

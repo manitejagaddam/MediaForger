@@ -125,9 +125,9 @@ export const BatchStudioPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow transition cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-800 text-zinc-100 hover:text-white border border-zinc-700/80 text-xs font-semibold shadow-sm transition active:scale-[0.98] cursor-pointer"
           >
-            <Upload className="w-4 h-4" />
+            <Upload className="w-4 h-4 text-zinc-300" />
             <span>Add Batch Images</span>
           </button>
           <input
@@ -140,11 +140,11 @@ export const BatchStudioPage: React.FC = () => {
           />
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-gray-400">Target Format:</span>
+            <span className="text-zinc-400">Target Format:</span>
             <select
               value={outputFormat}
               onChange={(e) => setOutputFormat(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-800 text-white font-mono outline-none"
+              className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 font-mono focus:border-zinc-500 outline-none transition"
             >
               <option value="webp">WebP</option>
               <option value="jpeg">JPEG</option>
@@ -154,16 +154,16 @@ export const BatchStudioPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-gray-400">Quality:</span>
+            <span className="text-zinc-400">Quality:</span>
             <input
               type="range"
               min="20"
               max="100"
               value={quality}
               onChange={(e) => setQuality(Number(e.target.value))}
-              className="accent-blue-500 w-24 h-1.5 bg-gray-800 rounded"
+              className="accent-white w-24 h-1.5 bg-zinc-800 rounded cursor-pointer"
             />
-            <span className="font-mono text-blue-400">{quality}%</span>
+            <span className="font-mono text-zinc-100 font-bold">{quality}%</span>
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export const BatchStudioPage: React.FC = () => {
           {items.some((it) => it.status === 'completed') && (
             <button
               onClick={handleDownloadAllAsZip}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow transition cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-white border border-zinc-700 text-xs font-semibold tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer"
             >
               <Archive className="w-4 h-4" />
               <span>Download ZIP Bundle</span>
@@ -181,16 +181,16 @@ export const BatchStudioPage: React.FC = () => {
           <button
             disabled={isProcessing || items.length === 0}
             onClick={executeBatch}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-blue-900 text-white text-xs font-bold uppercase tracking-wider shadow transition cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-100 hover:bg-white disabled:bg-zinc-800 text-zinc-950 disabled:text-zinc-500 text-xs font-semibold tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer"
           >
             {isProcessing ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <RefreshCw className="w-4 h-4 animate-spin text-zinc-900" />
                 <span>Processing Batch...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-zinc-900" />
                 <span>Start Batch ({items.length})</span>
               </>
             )}
@@ -200,12 +200,12 @@ export const BatchStudioPage: React.FC = () => {
 
       {/* Batch Items Table */}
       <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-          <h4 className="text-sm font-bold text-white">Batch Queue ({items.length} Files)</h4>
+        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+          <h4 className="text-sm font-bold text-zinc-100">Batch Queue ({items.length} Files)</h4>
           {items.length > 0 && (
             <button
               onClick={() => setItems([])}
-              className="text-xs text-gray-400 hover:text-red-400 transition"
+              className="text-xs text-zinc-400 hover:text-zinc-200 transition"
             >
               Clear Queue
             </button>
@@ -215,7 +215,7 @@ export const BatchStudioPage: React.FC = () => {
         {items.length === 0 ? (
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-gray-800 rounded-xl p-16 text-center text-xs text-gray-400 cursor-pointer"
+            className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-900/30 rounded-xl p-16 text-center text-xs text-zinc-400 cursor-pointer transition"
           >
             No files in queue. Click "Add Batch Images" to batch convert multiple assets at once.
           </div>
@@ -224,15 +224,15 @@ export const BatchStudioPage: React.FC = () => {
             {items.map((it, idx) => (
               <div
                 key={it.id}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-gray-900 border border-gray-800 text-xs"
+                className="flex items-center justify-between p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs hover:border-zinc-700 transition"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded bg-gray-800 text-gray-300 font-mono text-[10px] flex items-center justify-center">
+                  <span className="w-6 h-6 rounded bg-zinc-800 text-zinc-300 font-mono text-[10px] flex items-center justify-center">
                     {idx + 1}
                   </span>
                   <div>
-                    <p className="font-semibold text-white truncate max-w-sm">{it.file.name}</p>
-                    <p className="text-[10px] text-gray-400">
+                    <p className="font-semibold text-zinc-100 truncate max-w-sm">{it.file.name}</p>
+                    <p className="text-[10px] text-zinc-500 font-mono">
                       {(it.file.size / 1024).toFixed(1)} KB → {outputFormat.toUpperCase()}
                     </p>
                   </div>
@@ -240,18 +240,18 @@ export const BatchStudioPage: React.FC = () => {
 
                 <div className="flex items-center gap-4">
                   {it.status === 'idle' && (
-                    <span className="text-gray-400 flex items-center gap-1">
+                    <span className="text-zinc-500 flex items-center gap-1 font-mono text-[11px]">
                       <Clock className="w-3.5 h-3.5" /> Queued
                     </span>
                   )}
                   {it.status === 'processing' && (
-                    <span className="text-blue-400 flex items-center gap-1 font-semibold">
+                    <span className="text-zinc-200 flex items-center gap-1 font-semibold text-[11px]">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Processing
                     </span>
                   )}
                   {it.status === 'completed' && it.outputSize && (
                     <div className="flex items-center gap-3">
-                      <span className="text-emerald-400 font-mono font-semibold">
+                      <span className="text-zinc-200 font-mono font-semibold">
                         {(it.outputSize / 1024).toFixed(1)} KB
                       </span>
                       <button
@@ -259,7 +259,7 @@ export const BatchStudioPage: React.FC = () => {
                           const filename = ExportManager.formatOutputFilename(it.file.name, outputFormat);
                           ExportManager.download(it.outputBlob!, filename);
                         }}
-                        className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200"
+                        className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/60 transition active:scale-95"
                         title="Download"
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -269,7 +269,7 @@ export const BatchStudioPage: React.FC = () => {
 
                   <button
                     onClick={() => setItems((prev) => prev.filter((_, i) => i !== idx))}
-                    className="text-gray-500 hover:text-red-400 p-1"
+                    className="text-zinc-500 hover:text-zinc-200 p-1 transition"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
