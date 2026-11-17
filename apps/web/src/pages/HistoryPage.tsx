@@ -43,33 +43,33 @@ export const HistoryPage: React.FC = () => {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
       {/* Analytics Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-panel rounded-2xl p-6 transition-all hover:border-zinc-700/80">
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="glass-panel rounded-xl p-5">
+          <span className="text-xs font-medium text-zinc-400">
             Total Conversions
           </span>
-          <p className="text-2xl font-extrabold text-white mt-1 font-mono">{history.length}</p>
-          <p className="text-[11px] text-zinc-500 mt-1">Processed 100% locally on this device</p>
+          <p className="text-2xl font-bold text-white mt-1 font-mono">{history.length}</p>
+          <p className="text-[11px] text-zinc-400 mt-0.5">Completed jobs</p>
         </div>
 
-        <div className="glass-panel rounded-2xl p-6 transition-all hover:border-zinc-700/80">
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+        <div className="glass-panel rounded-xl p-5">
+          <span className="text-xs font-medium text-zinc-400">
             Data Processed
           </span>
-          <p className="text-2xl font-extrabold text-zinc-100 mt-1 font-mono">
+          <p className="text-2xl font-bold text-zinc-100 mt-1 font-mono">
             {totalInputMb.toFixed(1)} MB
           </p>
-          <p className="text-[11px] text-zinc-500 mt-1">Source file buffer throughput</p>
+          <p className="text-[11px] text-zinc-400 mt-0.5">Total input size</p>
         </div>
 
-        <div className="glass-panel rounded-2xl p-6 transition-all hover:border-zinc-700/80">
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-            Storage Space Saved
+        <div className="glass-panel rounded-xl p-5">
+          <span className="text-xs font-medium text-zinc-400">
+            Storage Saved
           </span>
-          <p className="text-2xl font-extrabold text-zinc-100 mt-1 font-mono">
+          <p className="text-2xl font-bold text-zinc-100 mt-1 font-mono">
             {savedMb.toFixed(1)} MB
           </p>
-          <p className="text-[11px] text-zinc-500 mt-1">Via local compression engines</p>
+          <p className="text-[11px] text-zinc-400 mt-0.5">Space reduced</p>
         </div>
       </div>
 

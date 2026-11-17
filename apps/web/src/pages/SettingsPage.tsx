@@ -105,24 +105,24 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
       {/* Storage & Persistence */}
-      <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-          <div className="flex items-center gap-2.5">
-            <HardDrive className="w-5 h-5 text-zinc-300" />
-            <h4 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
-              Local Storage Quota & OPFS
+      <div className="glass-panel rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+          <div className="flex items-center gap-2">
+            <HardDrive className="w-4 h-4 text-zinc-300" />
+            <h4 className="text-xs font-semibold text-zinc-100">
+              Storage & Cache
             </h4>
           </div>
 
           <button
             onClick={handleRequestPersistence}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition active:scale-95 ${
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition active:scale-95 ${
               quota.isPersistent
-                ? 'bg-zinc-800 text-zinc-200 border border-zinc-700'
-                : 'bg-zinc-100 hover:bg-white text-zinc-950 shadow-sm'
+                ? 'bg-zinc-800 text-zinc-200 border border-zinc-750'
+                : 'btn-primary'
             }`}
           >
-            {quota.isPersistent ? 'Storage Persisted ✓' : 'Request Persistence'}
+            {quota.isPersistent ? 'Persisted ✓' : 'Request Persistence'}
           </button>
         </div>
 

@@ -29,90 +29,112 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   storageUsageMb = 0,
 }) => {
-  const navItems: { id: PageId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'image', label: 'Image Studio', icon: ForgeImageIcon },
-    { id: 'audio', label: 'Audio Studio', icon: ForgeAudioIcon },
-    { id: 'video', label: 'Video Studio', icon: ForgeVideoIcon },
-    { id: 'document', label: 'Document Studio', icon: ForgeDocumentIcon },
-    { id: 'archive', label: 'Archive Studio', icon: ForgeArchiveIcon },
+  const studioItems: { id: PageId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+    { id: 'image', label: 'Images', icon: ForgeImageIcon },
+    { id: 'audio', label: 'Audio', icon: ForgeAudioIcon },
+    { id: 'video', label: 'Video', icon: ForgeVideoIcon },
+    { id: 'document', label: 'Documents', icon: ForgeDocumentIcon },
+    { id: 'archive', label: 'Archives', icon: ForgeArchiveIcon },
     { id: 'ai', label: 'AI Studio', icon: ForgeAiIcon },
-    { id: 'batch', label: 'Batch Processing', icon: ForgeBatchIcon },
-    { id: 'history', label: 'Conversion History', icon: ForgeHistoryIcon },
+  ];
+
+  const utilityItems: { id: PageId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'batch', label: 'Batch Queue', icon: ForgeBatchIcon },
+    { id: 'history', label: 'History', icon: ForgeHistoryIcon },
     { id: 'settings', label: 'Settings', icon: ForgeSettingsIcon },
-    { id: 'about', label: 'Privacy & Specs', icon: ForgeShieldIcon },
+    { id: 'about', label: 'Specs & Privacy', icon: ForgeShieldIcon },
   ];
 
   return (
-    <aside className="w-64 border-r border-[#1e1e24] bg-[#0c0c0f] flex flex-col justify-between shrink-0 h-screen select-none">
+    <aside className="w-56 border-r border-[#1a1a20] bg-[#09090b] flex flex-col justify-between shrink-0 h-screen select-none">
       <div>
         {/* Brand */}
-        <div className="h-16 flex items-center px-6 gap-3 border-b border-[#1e1e24]">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-700/60 flex items-center justify-center shadow-sm">
-            <MediaForgeLogo className="w-7 h-7" size={28} />
+        <div className="h-14 flex items-center px-4 gap-2.5 border-b border-[#1a1a20]">
+          <div className="w-7 h-7 rounded-lg bg-[#141418] border border-white/[0.08] flex items-center justify-center">
+            <MediaForgeLogo className="w-4 h-4 text-white" size={18} />
           </div>
-          <div>
-            <h1 className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
-              MediaForge
-              <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700/80">
-                Local
-              </span>
-            </h1>
-            <p className="text-[11px] text-zinc-500 font-medium">Privacy-First Engine</p>
-          </div>
+          <span className="font-semibold text-xs tracking-tight text-zinc-200">MediaForge</span>
         </div>
 
-        {/* Navigation items */}
-        <nav className="p-3 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activePage === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 ${
-                  isActive
-                    ? 'bg-zinc-800/90 text-white border border-zinc-700/80 shadow-sm font-semibold'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60 border border-transparent hover:border-zinc-800/50'
-                }`}
-              >
-                <Icon
-                  className={`w-4 h-4 transition-colors ${
-                    isActive ? 'text-zinc-100' : 'text-zinc-500'
-                  }`}
-                />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        {/* Navigation sections */}
+        <div className="p-2 space-y-4">
+          <div>
+            <span className="px-2.5 text-[10px] font-medium tracking-wider uppercase text-zinc-600 block mb-1">
+              Studios
+            </span>
+            <nav className="space-y-0.5">
+              {studioItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activePage === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                      isActive
+                        ? 'bg-[#18181f] text-white font-medium border border-white/[0.08]'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#121216] border border-transparent'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-3.5 h-3.5 ${
+                        isActive ? 'text-zinc-100' : 'text-zinc-500'
+                      }`}
+                    />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          <div>
+            <span className="px-2.5 text-[10px] font-medium tracking-wider uppercase text-zinc-600 block mb-1">
+              Workspace
+            </span>
+            <nav className="space-y-0.5">
+              {utilityItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activePage === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                      isActive
+                        ? 'bg-[#18181f] text-white font-medium border border-white/[0.08]'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#121216] border border-transparent'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-3.5 h-3.5 ${
+                        isActive ? 'text-zinc-100' : 'text-zinc-500'
+                      }`}
+                    />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
       </div>
 
-      {/* Footer Status Panel */}
-      <div className="p-4 border-t border-[#1e1e24] bg-[#0a0a0c] space-y-3">
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="flex items-center gap-2 text-zinc-300 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            100% On-Device
+      {/* Storage & Environment Footer */}
+      <div className="p-3 border-t border-[#1a1a20] space-y-2">
+        <div className="flex items-center justify-between text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1.5">
+            <HardDrive className="w-3 h-3 text-zinc-600" />
+            Storage
           </span>
-          <span className="text-zinc-500 text-[10px] font-mono">Zero Egress</span>
+          <span className="font-mono text-zinc-400">{storageUsageMb.toFixed(1)} MB</span>
         </div>
-
-        <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/70 text-[11px] space-y-1.5">
-          <div className="flex items-center justify-between text-zinc-400">
-            <span className="flex items-center gap-1.5 text-zinc-400">
-              <HardDrive className="w-3.5 h-3.5 text-zinc-500" />
-              Local Storage
-            </span>
-            <span className="font-mono text-zinc-300 font-semibold">{storageUsageMb.toFixed(1)} MB</span>
-          </div>
-          <div className="w-full bg-zinc-800/80 h-1 rounded-full overflow-hidden">
-            <div
-              className="bg-zinc-400 h-full rounded-full transition-all duration-300"
-              style={{ width: `${Math.min(100, Math.max(5, (storageUsageMb / 100) * 100))}%` }}
-            />
-          </div>
+        <div className="w-full bg-[#16161c] h-1 rounded-full overflow-hidden">
+          <div
+            className="bg-zinc-500 h-full rounded-full"
+            style={{ width: `${Math.min(100, Math.max(3, (storageUsageMb / 200) * 100))}%` }}
+          />
         </div>
       </div>
     </aside>

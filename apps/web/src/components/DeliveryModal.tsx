@@ -102,27 +102,27 @@ export const DeliveryModal: React.FC<DeliveryModalProps> = ({
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
       <div className="bg-[#0e0e12] border border-[#27272a] rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-6 border-b border-[#222227] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-zinc-100 shadow-sm">
-              <Package className="w-5 h-5 text-zinc-200" />
+        <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#141418] border border-white/[0.08] flex items-center justify-center text-zinc-200">
+              <Package className="w-4 h-4 text-zinc-300" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                Client Delivery & Packaging Hub
-                <span className="text-[9px] uppercase px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono border border-zinc-700">
-                  Certified SHA-256
+              <h3 className="text-xs font-semibold text-white tracking-tight flex items-center gap-2">
+                Package Deliverable
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/50">
+                  SHA-256
                 </span>
               </h3>
-              <p className="text-xs text-zinc-400">
-                Seal finished media assets into a verifiable client delivery vault with cryptographic provenance.
+              <p className="text-[11px] text-zinc-400">
+                Bundle files with SHA-256 checksums and an integrity manifest
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -141,28 +141,28 @@ export const DeliveryModal: React.FC<DeliveryModalProps> = ({
               {/* Form Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                    Recipient / Client Name
+                  <label className="text-[11px] font-medium text-zinc-400">
+                    Client or recipient
                   </label>
                   <input
                     type="text"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     placeholder="e.g. Acme Studio"
-                    className="w-full bg-[#141418] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500"
+                    className="w-full bg-[#141418] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-500"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                    Deliverable Project Name
+                  <label className="text-[11px] font-medium text-zinc-400">
+                    Project title
                   </label>
                   <input
                     type="text"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="e.g. Summer Commercial 4K"
-                    className="w-full bg-[#141418] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500"
+                    placeholder="e.g. Master Campaign"
+                    className="w-full bg-[#141418] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-500"
                   />
                 </div>
               </div>
@@ -170,8 +170,8 @@ export const DeliveryModal: React.FC<DeliveryModalProps> = ({
               {/* Staged Assets List */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold uppercase tracking-wider text-zinc-400">
-                    Staged Assets for Delivery ({stagedFiles.length})
+                  <span className="font-medium text-zinc-400 text-[11px]">
+                    Staged Assets ({stagedFiles.length})
                   </span>
                   <span className="text-zinc-500 font-mono text-[11px]">
                     Total:{' '}

@@ -239,7 +239,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
       {!file ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="glass-panel border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-3xl p-16 text-center cursor-pointer transition-all hover:bg-[#141418] group"
+          className="glass-panel border border-dashed border-white/[0.12] hover:border-white/[0.25] rounded-2xl p-12 text-center cursor-pointer transition-all hover:bg-[#0f0f14] group"
         >
           <input
             ref={fileInputRef}
@@ -252,13 +252,16 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200 shadow-md">
-            <ForgeAudioIcon className="w-9 h-9 text-zinc-100" />
+          <div className="w-10 h-10 mx-auto rounded-xl bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center mb-3">
+            <ForgeAudioIcon className="w-5 h-5 text-zinc-200" />
           </div>
-          <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select an Audio Track to Forge</h3>
-          <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">
-            Supports MP3, WAV, FLAC, OGG, Opus, AAC, M4A. Fast forward, rewind, waveform seek, normalize, trim, and export to MP3 or WAV.
+          <h3 className="text-sm font-semibold text-zinc-100 tracking-tight">Drop audio to edit or convert</h3>
+          <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
+            MP3, WAV, FLAC, OGG, and AAC transcoding, volume normalization, and trimming
           </p>
+          <div className="mt-4">
+            <span className="btn-primary">Choose Audio</span>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -199,9 +199,9 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
               {filesToZip.length === 0 ? (
                 <div
                   onClick={() => fileInputCreateRef.current?.click()}
-                  className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-900/30 rounded-xl p-12 text-center cursor-pointer text-xs text-zinc-400 transition"
+                  className="border border-dashed border-white/[0.12] hover:border-white/[0.25] bg-[#0c0c10] rounded-xl p-10 text-center cursor-pointer text-xs text-zinc-400 transition"
                 >
-                  Click "Add Files" or drop multiple files here to bundle them into a secure ZIP.
+                  Click to add files or drop multiple items here to bundle as a ZIP.
                 </div>
               ) : (
                 <div className="space-y-2 max-h-80 overflow-auto">

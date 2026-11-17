@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { PageId } from '../types';
-import { CheckCircle2, Package, Sparkles, ChevronDown } from 'lucide-react';
-import { ForgeShieldIcon } from './icons/StudioIcons';
+import { Package, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   activePage: PageId;
@@ -15,117 +14,91 @@ export const Header: React.FC<HeaderProps> = ({
   onLoadDemo,
 }) => {
   const [demoMenuOpen, setDemoMenuOpen] = useState(false);
-  const titles: Record<PageId, { title: string; subtitle: string }> = {
-    dashboard: {
-      title: 'MediaForge Workspace',
-      subtitle: 'Universal client-side media conversion, compression, and editing hub',
-    },
-    image: {
-      title: 'Image Studio',
-      subtitle: 'Native Canvas 2D & WASM image transcoding, resize, crop, filters, and compression',
-    },
-    audio: {
-      title: 'Audio Studio',
-      subtitle: 'Client-side Web Audio transcoding, trimming, normalization, and waveform preview',
-    },
-    video: {
-      title: 'Video Studio',
-      subtitle: 'Video inspection, hardware thumbnail extraction, and WebCodecs transcoding',
-    },
-    document: {
-      title: 'Document Studio',
-      subtitle: 'In-browser CSV ↔ JSON parsing, text conversion, and document processing',
-    },
-    archive: {
-      title: 'Archive Studio',
-      subtitle: 'Secure ZIP compression & extraction with path traversal and bomb protection',
-    },
-    ai: {
-      title: 'Neural AI Studio',
-      subtitle: 'On-device neural super-resolution and alpha matte background removal',
-    },
-    batch: {
-      title: 'Batch Processing Queue',
-      subtitle: 'Multi-file parallel conversion with per-file status and ZIP bundling',
-    },
-    history: {
-      title: 'Conversion History',
-      subtitle: 'Persistent local conversion logs and size savings analytics stored in IndexedDB',
-    },
-    settings: {
-      title: 'Settings & Cache',
-      subtitle: 'Manage local storage quotas, worker concurrency limits, and offline cache',
-    },
-    about: {
-      title: 'Privacy & System Architecture',
-      subtitle: 'Zero-egress guarantees, technical specification, and format support matrix',
-    },
+  const titles: Record<PageId, { title: string; category?: string }> = {
+    dashboard: { title: 'Overview', category: 'Hub' },
+    image: { title: 'Images', category: 'Studio' },
+    audio: { title: 'Audio', category: 'Studio' },
+    video: { title: 'Video', category: 'Studio' },
+    document: { title: 'Documents', category: 'Studio' },
+    archive: { title: 'Archives', category: 'Studio' },
+    ai: { title: 'AI Studio', category: 'Neural' },
+    batch: { title: 'Batch Queue', category: 'Workflow' },
+    history: { title: 'History', category: 'Analytics' },
+    settings: { title: 'Settings', category: 'Config' },
+    about: { title: 'System Specs', category: 'Architecture' },
   };
 
   const current = titles[activePage] || titles.dashboard;
 
   return (
-    <header className="h-16 border-b border-[#1e1e24] bg-[#0c0c0f]/95 backdrop-blur px-8 flex items-center justify-between shrink-0">
-      <div>
-        <h2 className="text-sm font-semibold text-white tracking-tight">{current.title}</h2>
-        <p className="text-xs text-zinc-400">{current.subtitle}</p>
+    <header className="h-14 border-b border-[#1b1b22] bg-[#09090b]/90 backdrop-blur px-6 flex items-center justify-between shrink-0 select-none">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-zinc-500 font-medium">MediaForge</span>
+        <span className="text-zinc-700">/</span>
+        <span className="text-zinc-200 font-semibold">{current.title}</span>
+        {current.category && (
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800/60 text-zinc-400 border border-zinc-700/40">
+            {current.category}
+          </span>
+        )}
       </div>
 
-      <div className="flex items-center gap-2.5">
-        {/* Presentation Demo Dropdown */}
+      {/* Action Toolbar */}
+      <div className="flex items-center gap-2">
+        {/* Sample Fixtures Dropdown */}
         {onLoadDemo && (
           <div className="relative">
             <button
               onClick={() => setDemoMenuOpen((prev) => !prev)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-850 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold shadow-sm transition active:scale-[0.98]"
-              title="Instantly load sample fixtures for live presentation demo"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#141418] hover:bg-[#1a1a20] border border-[#27272e] text-zinc-300 hover:text-white text-xs font-medium transition active:scale-[0.98]"
+              title="Load sample test file"
             >
-              <Sparkles className="w-3.5 h-3.5 text-zinc-300" />
-              <span>Demo Fixtures</span>
-              <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Sample Data</span>
+              <ChevronDown className="w-3 h-3 text-zinc-400" />
             </button>
 
             {demoMenuOpen && (
-              <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-[#111114] border border-[#27272a] shadow-2xl py-2 z-50 text-xs space-y-1">
+              <div className="absolute right-0 mt-1.5 w-48 rounded-xl bg-[#111116] border border-[#272730] shadow-2xl py-1.5 z-50 text-xs">
                 <button
                   onClick={() => {
                     onLoadDemo('portrait');
                     setDemoMenuOpen(false);
                   }}
-                  className="w-full text-left px-3.5 py-2 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
+                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
                 >
-                  <span>Sample Portrait</span>
-                  <span className="text-[10px] text-zinc-500 font-mono">Image / AI</span>
+                  <span>Portrait</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">PNG 800px</span>
                 </button>
                 <button
                   onClick={() => {
                     onLoadDemo('audio');
                     setDemoMenuOpen(false);
                   }}
-                  className="w-full text-left px-3.5 py-2 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
+                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
                 >
-                  <span>Sample Soundtrack</span>
-                  <span className="text-[10px] text-zinc-500 font-mono">Audio WAV</span>
+                  <span>Audio Track</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">WAV 44kHz</span>
                 </button>
                 <button
                   onClick={() => {
                     onLoadDemo('video');
                     setDemoMenuOpen(false);
                   }}
-                  className="w-full text-left px-3.5 py-2 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
+                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
                 >
-                  <span>Sample 60FPS Video</span>
-                  <span className="text-[10px] text-zinc-500 font-mono">WebM Video</span>
+                  <span>Video Clip</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">WebM 60fps</span>
                 </button>
                 <button
                   onClick={() => {
                     onLoadDemo('csv');
                     setDemoMenuOpen(false);
                   }}
-                  className="w-full text-left px-3.5 py-2 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
+                  className="w-full text-left px-3 py-1.5 hover:bg-zinc-800 text-zinc-200 flex items-center justify-between transition"
                 >
-                  <span>Sample Inventory Dataset</span>
-                  <span className="text-[10px] text-zinc-500 font-mono">CSV Data</span>
+                  <span>CSV Dataset</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">Table</span>
                 </button>
               </div>
             )}
@@ -136,21 +109,18 @@ export const Header: React.FC<HeaderProps> = ({
         {onOpenDelivery && (
           <button
             onClick={onOpenDelivery}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-850 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold shadow-sm transition active:scale-[0.98]"
-            title="Package deliverables into a certified client delivery vault with cryptographic SHA-256 manifest"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#141418] hover:bg-[#1a1a20] border border-[#27272e] text-zinc-300 hover:text-white text-xs font-medium transition active:scale-[0.98]"
+            title="Create certified deliverable archive with cryptographic manifest"
           >
-            <Package className="w-3.5 h-3.5 text-zinc-300" />
-            <span>Client Delivery</span>
+            <Package className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Package Vault</span>
           </button>
         )}
 
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium">
-          <ForgeShieldIcon className="w-3.5 h-3.5 text-zinc-300" />
-          <span>Local & Offline</span>
-        </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium">
-          <CheckCircle2 className="w-3.5 h-3.5 text-zinc-400" />
-          <span>Workers Ready</span>
+        {/* Minimal Engine Status */}
+        <div className="flex items-center gap-1.5 pl-2 border-l border-[#22222a] text-zinc-400 text-xs font-medium">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="text-[11px] text-zinc-400">Local</span>
         </div>
       </div>
     </header>

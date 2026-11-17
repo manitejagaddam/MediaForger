@@ -143,13 +143,16 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200 shadow-md">
-            <ForgeDocumentIcon className="w-9 h-9 text-zinc-100" />
+          <div className="w-10 h-10 mx-auto rounded-xl bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center mb-3">
+            <ForgeDocumentIcon className="w-5 h-5 text-zinc-200" />
           </div>
-          <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select a Document or Data File</h3>
-          <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">
-            Convert CSV to JSON, JSON to CSV, normalize TXT line breaks. Fast, private, in-browser parsing.
+          <h3 className="text-sm font-semibold text-zinc-100 tracking-tight">Drop dataset or document to convert</h3>
+          <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
+            CSV ↔ JSON conversion, text formatting, and tabular parsing
           </p>
+          <div className="mt-4">
+            <span className="btn-primary">Choose File</span>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

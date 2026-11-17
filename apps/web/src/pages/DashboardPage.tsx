@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Upload,
   ArrowRight,
-  FileCode,
-  Zap,
   Package,
-  Sparkles,
 } from 'lucide-react';
 import { PageId } from '../types';
-import { FileInspector, CapabilityDetector, FormatRegistry } from '@mediaforge/core';
-import { InspectionResult, SystemCapabilities } from '@mediaforge/shared-types';
+import { FileInspector, CapabilityDetector } from '@mediaforge/core';
+import { SystemCapabilities } from '@mediaforge/shared-types';
 import { db, ConversionHistoryItem } from '@mediaforge/database';
 import {
   MediaForgeLogo,
@@ -19,9 +15,7 @@ import {
   ForgeDocumentIcon,
   ForgeArchiveIcon,
   ForgeAiIcon,
-  ForgeBatchIcon,
   ForgeHistoryIcon,
-  ForgeShieldIcon,
 } from '../components/icons/StudioIcons';
 
 interface DashboardPageProps {
@@ -43,7 +37,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   useEffect(() => {
     CapabilityDetector.detect().then(setCapabilities);
-    db.history.orderBy('completedAt').reverse().limit(5).toArray().then(setRecentHistory);
+    db.history.orderBy('completedAt').reverse().limit(6).toArray().then(setRecentHistory);
   }, []);
 
   const handleFileDrop = async (file: File) => {
@@ -61,57 +55,51 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const studios = [
     {
       id: 'image' as PageId,
-      name: 'Image Studio',
+      name: 'Images',
       icon: ForgeImageIcon,
-      badge: 'Canvas 2D & WASM',
-      desc: 'Transcode, compress, resize, crop, and strip metadata from JPEG, PNG, WebP, AVIF, BMP, SVG.',
-      formats: ['JPG', 'PNG', 'WebP', 'AVIF', 'BMP', 'SVG'],
+      desc: 'Transcode, compress, crop, and resize with native and WASM decoders.',
+      formats: ['WEBP', 'PNG', 'JPG', 'AVIF', 'BMP'],
     },
     {
       id: 'audio' as PageId,
-      name: 'Audio Studio',
+      name: 'Audio',
       icon: ForgeAudioIcon,
-      badge: 'Web Audio & LAME',
-      desc: 'Convert formats, export MP3/WAV, trim, adjust sample rates, normalize volume, and inspect waveforms.',
-      formats: ['WAV', 'MP3', 'FLAC', 'OGG', 'OPUS', 'AAC'],
+      desc: 'Convert formats, export MP3/WAV, trim, and inspect interactive waveforms.',
+      formats: ['MP3', 'WAV', 'OGG', 'AAC', 'FLAC'],
     },
     {
       id: 'video' as PageId,
-      name: 'Video Studio',
+      name: 'Video',
       icon: ForgeVideoIcon,
-      badge: 'WebCodecs & Canvas',
-      desc: 'Extract hardware video frames, inspect codec streams, scrub, step frames, and capture full-res snapshots.',
-      formats: ['MP4', 'WebM', 'MKV', 'MOV', 'GIF'],
+      desc: 'Extract full-res frames, inspect stream metadata, and transcode.',
+      formats: ['MP4', 'WEBM', 'MKV', 'GIF'],
     },
     {
       id: 'document' as PageId,
-      name: 'Document Studio',
+      name: 'Documents',
       icon: ForgeDocumentIcon,
-      badge: 'Client-Side Parser',
-      desc: 'Convert CSV to JSON, JSON to CSV, normalize text files, and export formatted structures.',
-      formats: ['CSV', 'JSON', 'TXT', 'PDF'],
+      desc: 'Parse and convert tabular CSV ↔ JSON and formatted structured data.',
+      formats: ['CSV', 'JSON', 'TXT'],
     },
     {
       id: 'archive' as PageId,
-      name: 'Archive Studio',
+      name: 'Archives',
       icon: ForgeArchiveIcon,
-      badge: 'Protected ZIP',
-      desc: 'Create and extract ZIP archives with zip-slip path traversal and archive bomb protection.',
+      desc: 'Create and extract ZIP packages with built-in path-traversal safety.',
       formats: ['ZIP'],
     },
     {
       id: 'ai' as PageId,
-      name: 'AI Neural Studio',
+      name: 'AI Studio',
       icon: ForgeAiIcon,
-      badge: 'ONNX WebGPU & WASM',
-      desc: 'Run neural super-resolution upscaling (2x/4x) and IS-Net background removal with replacement studio.',
-      formats: ['Real-ESRGAN', 'IS-Net', 'ONNX'],
+      desc: 'Local neural background removal and 2x/4x super-resolution upscaling.',
+      formats: ['IS-NET', 'ESRGAN', 'ONNX'],
     },
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
-      {/* Hero Universal Dropzone */}
+    <div className="p-8 max-w-6xl mx-auto space-y-8 animate-fadeIn">
+      {/* Workspace Drag & Drop Canvas */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -125,156 +113,120 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             handleFileDrop(e.dataTransfer.files[0]);
           }
         }}
-        className={`relative rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ${
+        className={`relative rounded-2xl border border-dashed transition-all duration-200 p-10 text-center ${
           dragOver
-            ? 'border-zinc-400 bg-zinc-800/40 shadow-xl'
-            : 'border-[#27272a] bg-[#111114] hover:border-zinc-700 hover:bg-[#141418]'
+            ? 'border-zinc-300 bg-[#16161c]'
+            : 'border-[#26262f] bg-[#0c0c10] hover:border-[#383844] hover:bg-[#0f0f14]'
         }`}
       >
-        <div className="max-w-xl mx-auto space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-105">
-            <MediaForgeLogo className="w-9 h-9" size={36} />
+        <div className="max-w-md mx-auto space-y-3.5">
+          <div className="w-10 h-10 mx-auto rounded-xl bg-[#141418] border border-white/[0.08] flex items-center justify-center">
+            <MediaForgeLogo className="w-5 h-5 text-white" size={20} />
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-white tracking-tight">
-              Drop any media file here for instant local processing
+            <h3 className="text-sm font-semibold text-zinc-100 tracking-tight">
+              Drop media anywhere to open in studio
             </h3>
             <p className="text-xs text-zinc-400 mt-1">
-              Images, audio, videos, documents, or archives. Processed 100% on your device with zero data upload.
+              Photos, audio, video, datasets, or archives. Processed 100% locally.
             </p>
           </div>
 
-          <label className="btn-primary">
-            <FileCode className="w-4 h-4 text-zinc-950" />
-            <span>Browse Files</span>
-            <input
-              type="file"
-              className="hidden"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleFileDrop(e.target.files[0]);
-                }
-              }}
-            />
-          </label>
-        </div>
-      </div>
-
-      {/* Live Demo Showcase & Client Delivery Dispatcher Bar */}
-      <div className="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 border border-zinc-800/80 bg-zinc-900/40">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-zinc-300">
-            <Sparkles className="w-4 h-4 text-zinc-200" />
+          <div className="pt-1 flex items-center justify-center gap-2">
+            <label className="btn-primary">
+              <span>Choose File</span>
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleFileDrop(e.target.files[0]);
+                  }
+                }}
+              />
+            </label>
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-white tracking-tight flex items-center gap-1.5">
-              Live Presentation & Demo Mode
-              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono border border-zinc-700">
-                1-Click Fixtures
-              </span>
-            </h4>
-            <p className="text-[11px] text-zinc-400">
-              Instantly test and demonstrate local processing with pre-synthesized media fixtures.
-            </p>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2 flex-wrap text-xs">
+          {/* Discreet Inline Sample Loaders */}
           {onLoadDemo && (
-            <>
+            <div className="pt-2 flex items-center justify-center gap-1.5 text-[11px] text-zinc-400">
+              <span className="text-zinc-500">Quick samples:</span>
               <button
                 onClick={() => onLoadDemo('portrait')}
-                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+                className="px-2 py-0.5 rounded hover:bg-[#1a1a22] text-zinc-300 hover:text-white transition"
               >
-                Demo Portrait (AI/Matte)
+                Portrait
               </button>
+              <span className="text-zinc-600">·</span>
               <button
                 onClick={() => onLoadDemo('audio')}
-                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+                className="px-2 py-0.5 rounded hover:bg-[#1a1a22] text-zinc-300 hover:text-white transition"
               >
-                Demo Audio (LAME MP3)
+                Audio
               </button>
+              <span className="text-zinc-600">·</span>
               <button
                 onClick={() => onLoadDemo('video')}
-                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+                className="px-2 py-0.5 rounded hover:bg-[#1a1a22] text-zinc-300 hover:text-white transition"
               >
-                Demo Video (60FPS)
+                Video
               </button>
+              <span className="text-zinc-600">·</span>
               <button
                 onClick={() => onLoadDemo('csv')}
-                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+                className="px-2 py-0.5 rounded hover:bg-[#1a1a22] text-zinc-300 hover:text-white transition"
               >
-                Demo Dataset (CSV)
+                Data
               </button>
-            </>
-          )}
-
-          {onOpenDelivery && (
-            <button
-              onClick={onOpenDelivery}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-zinc-950 font-bold shadow-sm hover:bg-zinc-100 transition active:scale-95 ml-1"
-            >
-              <Package className="w-3.5 h-3.5 text-zinc-950" />
-              <span>Client Delivery Vault</span>
-            </button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Studios Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-            Specialized Processing Studios
-          </h3>
-          <span className="text-xs text-zinc-500 font-mono">6 Local Engines Active</span>
+      {/* Studio Tool Tiles */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-xs text-zinc-400">
+          <span className="font-medium tracking-wider uppercase text-[11px] text-zinc-400">Studios</span>
+          <span className="font-mono text-zinc-400 text-[11px]">6 engines active</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {studios.map((studio) => {
             const Icon = studio.icon;
             return (
               <div
                 key={studio.id}
                 onClick={() => onNavigate(studio.id)}
-                className="glass-card rounded-2xl p-5 cursor-pointer flex flex-col justify-between group"
+                className="glass-card rounded-xl p-4 cursor-pointer flex flex-col justify-between group"
               >
-                <div className="space-y-3.5">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center text-zinc-200 shadow-sm transition-transform duration-200 group-hover:scale-105 group-hover:border-zinc-500">
-                      <Icon className="w-5 h-5 text-zinc-200" />
+                    <div className="w-8 h-8 rounded-lg bg-[#16161c] border border-white/[0.08] flex items-center justify-center text-zinc-200 group-hover:border-white/[0.18] transition-colors">
+                      <Icon className="w-4 h-4 text-zinc-200" />
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800">
-                      {studio.badge}
-                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-200 group-hover:translate-x-0.5 transition-all" />
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-semibold text-white group-hover:text-zinc-200 transition-colors">
+                    <h4 className="text-xs font-semibold text-zinc-100 group-hover:text-white transition-colors">
                       {studio.name}
                     </h4>
-                    <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-zinc-400 mt-0.5 line-clamp-2 leading-relaxed">
                       {studio.desc}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[#222227] flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {studio.formats.slice(0, 4).map((fmt) => (
-                      <span
-                        key={fmt}
-                        className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800"
-                      >
-                        {fmt}
-                      </span>
-                    ))}
-                    {studio.formats.length > 4 && (
-                      <span className="text-[10px] text-zinc-500">+{studio.formats.length - 4}</span>
-                    )}
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-white group-hover:translate-x-1.5 transition-all duration-200" />
+                <div className="mt-3 pt-2.5 border-t border-white/[0.05] flex items-center gap-1.5 flex-wrap">
+                  {studio.formats.map((fmt) => (
+                    <span
+                      key={fmt}
+                      className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-zinc-400 border border-white/[0.05]"
+                    >
+                      {fmt}
+                    </span>
+                  ))}
                 </div>
               </div>
             );
@@ -282,95 +234,95 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
       </div>
 
-      {/* System Engine Telemetry & Recent History Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Telemetry Card */}
-        <div className="glass-panel rounded-2xl p-5 space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#222227] pb-3">
-            <Zap className="w-4 h-4 text-zinc-300" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-200">
-              Hardware & Accelerators
-            </h4>
-          </div>
-
-          <div className="space-y-2 text-xs font-mono">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-zinc-400">WebCodecs Pipeline</span>
-              <span className={capabilities?.webCodecs ? 'text-zinc-200 font-semibold' : 'text-zinc-400'}>
-                {capabilities?.webCodecs ? 'Hardware Direct' : 'WASM'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-zinc-400">WebGPU Neural Engine</span>
-              <span className={capabilities?.webGPU ? 'text-zinc-200 font-semibold' : 'text-zinc-400'}>
-                {capabilities?.webGPU ? 'Active' : 'WASM SIMD'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-zinc-400">Origin Private FS</span>
-              <span className={capabilities?.opfs ? 'text-zinc-200 font-semibold' : 'text-zinc-400'}>
-                {capabilities?.opfs ? 'Direct I/O' : 'IndexedDB'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-zinc-400">Worker Concurrency</span>
-              <span className="text-zinc-200 font-semibold">
-                {capabilities?.hardwareConcurrency || 4} Threads
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent History Card */}
-        <div className="glass-panel rounded-2xl p-5 lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#222227] pb-3">
+      {/* Activity & System Telemetry */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+        {/* Recent Activity */}
+        <div className="glass-panel rounded-xl p-4 lg:col-span-2 space-y-3">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-2.5">
             <div className="flex items-center gap-2">
-              <ForgeHistoryIcon className="w-4 h-4 text-zinc-300" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-200">
-                Recent Conversions
-              </h4>
+              <ForgeHistoryIcon className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="text-xs font-semibold text-zinc-200">Recent Activity</span>
             </div>
             <button
               onClick={() => onNavigate('history')}
-              className="text-xs text-zinc-400 hover:text-white transition-colors"
+              className="text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors"
             >
-              Full History →
+              View all →
             </button>
           </div>
 
           {recentHistory.length === 0 ? (
-            <div className="p-8 text-center text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl">
-              No conversions recorded yet. Choose any studio above to begin!
+            <div className="py-8 text-center text-xs text-zinc-400">
+              No recent files. Open any studio above to begin.
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {recentHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 text-xs"
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-[#121217] border border-white/[0.05] text-xs hover:border-white/[0.1] transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700/60 text-zinc-200 flex items-center justify-center font-mono text-[10px] font-bold uppercase">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-6 h-6 rounded bg-[#181820] text-zinc-300 flex items-center justify-center font-mono text-[9px] font-bold uppercase shrink-0">
                       {item.outputFormat}
                     </span>
-                    <div>
-                      <p className="font-semibold text-white truncate max-w-xs">{item.fileName}</p>
-                      <p className="text-[11px] text-zinc-500 font-mono">
+                    <div className="truncate">
+                      <p className="font-medium text-zinc-200 truncate max-w-xs">{item.fileName}</p>
+                      <p className="text-[10px] text-zinc-400 font-mono">
                         {item.inputFormat.toUpperCase()} → {item.outputFormat.toUpperCase()} • {item.durationMs}ms
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-zinc-200 font-mono font-semibold">
+                  <div className="text-right shrink-0">
+                    <span className="text-zinc-300 font-mono text-[11px]">
                       {(item.outputSizeBytes / 1024).toFixed(1)} KB
                     </span>
-                    <p className="text-[10px] text-zinc-500">
+                    <p className="text-[10px] text-zinc-400">
                       {Math.round(((item.inputSizeBytes - item.outputSizeBytes) / item.inputSizeBytes) * 100)}% saved
                     </p>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Engine Telemetry */}
+        <div className="glass-panel rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-2.5">
+            <span className="text-xs font-semibold text-zinc-200">System Engine</span>
+            <span className="text-[10px] font-mono text-zinc-400">Active</span>
+          </div>
+
+          <div className="space-y-1.5 text-xs font-mono">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-[#121217] border border-white/[0.04]">
+              <span className="text-zinc-400">Worker Threads</span>
+              <span className="text-zinc-200">{capabilities?.hardwareConcurrency || 4}</span>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-[#121217] border border-white/[0.04]">
+              <span className="text-zinc-400">Video Pipeline</span>
+              <span className="text-zinc-200">{capabilities?.webCodecs ? 'WebCodecs HW' : 'WASM'}</span>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-[#121217] border border-white/[0.04]">
+              <span className="text-zinc-400">Neural Acceleration</span>
+              <span className="text-zinc-200">{capabilities?.webGPU ? 'WebGPU' : 'WASM SIMD'}</span>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-[#121217] border border-white/[0.04]">
+              <span className="text-zinc-400">Storage FS</span>
+              <span className="text-zinc-200">{capabilities?.opfs ? 'OPFS Direct' : 'IndexedDB'}</span>
+            </div>
+          </div>
+
+          {onOpenDelivery && (
+            <div className="pt-1">
+              <button
+                onClick={onOpenDelivery}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-[#16161c] hover:bg-[#1c1c24] border border-white/[0.08] text-zinc-300 hover:text-white text-xs font-medium transition active:scale-[0.98]"
+              >
+                <Package className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Package Delivery Vault</span>
+              </button>
             </div>
           )}
         </div>

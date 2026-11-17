@@ -13,64 +13,63 @@ export const AboutPage: React.FC = () => {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
       {/* Privacy Manifesto Hero */}
-      <div className="glass-panel rounded-2xl p-8 space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-200 flex items-center justify-center shadow-md">
-            <MediaForgeLogo className="w-10 h-10" size={40} />
+      <div className="glass-panel rounded-xl p-6 space-y-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center">
+            <MediaForgeLogo className="w-5 h-5 text-white" size={20} />
           </div>
           <div>
-            <h3 className="text-xl font-extrabold text-white tracking-tight">
-              Privacy-First Zero-Egress Architecture
+            <h3 className="text-sm font-semibold text-white tracking-tight">
+              Local Architecture & Privacy
             </h3>
-            <p className="text-xs text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-              MediaForge is built on a fundamental requirement: all media files belong strictly to you.
-              Processing occurs 100% inside your browser environment or local browser extension.
+            <p className="text-xs text-zinc-400 mt-0.5 max-w-xl">
+              All media processing occurs inside your local browser or extension sandbox. No files are ever sent to remote servers.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-          <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 text-xs hover:border-zinc-700 transition">
-            <div className="flex items-center gap-2 text-zinc-200 font-bold">
-              <Lock className="w-4 h-4 text-zinc-400" />
-              <span>Zero Server Uploads</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
+          <div className="p-3.5 rounded-lg bg-[#121217] border border-white/[0.05] space-y-1 text-xs">
+            <div className="flex items-center gap-2 text-zinc-200 font-medium">
+              <Lock className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Zero Network Egress</span>
             </div>
             <p className="text-zinc-400 text-[11px] leading-relaxed">
-              User files are never transferred over HTTP/WebSockets to any backend server or cloud API.
+              Files are never uploaded to any remote server or cloud service.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 text-xs hover:border-zinc-700 transition">
-            <div className="flex items-center gap-2 text-zinc-200 font-bold">
-              <Cpu className="w-4 h-4 text-zinc-400" />
-              <span>Client-Side Web Workers</span>
+          <div className="p-3.5 rounded-lg bg-[#121217] border border-white/[0.05] space-y-1 text-xs">
+            <div className="flex items-center gap-2 text-zinc-200 font-medium">
+              <Cpu className="w-3.5 h-3.5 text-zinc-400" />
+              <span>On-Device Compute</span>
             </div>
             <p className="text-zinc-400 text-[11px] leading-relaxed">
-              Computation executes locally via OffscreenCanvas, Web Audio API, WebAssembly, and WebGPU.
+              Decoding and transformation run via WebAssembly, WebCodecs, and WebGPU.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 text-xs hover:border-zinc-700 transition">
-            <div className="flex items-center gap-2 text-zinc-200 font-bold">
-              <Layers className="w-4 h-4 text-zinc-400" />
-              <span>Isolated Local Storage</span>
+          <div className="p-3.5 rounded-lg bg-[#121217] border border-white/[0.05] space-y-1 text-xs">
+            <div className="flex items-center gap-2 text-zinc-200 font-medium">
+              <Layers className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Private Local Storage</span>
             </div>
             <p className="text-zinc-400 text-[11px] leading-relaxed">
-              Files and history are persisted locally in browser IndexedDB and Origin Private File System (OPFS).
+              Cached assets are stored strictly in IndexedDB and Origin Private File System.
             </p>
           </div>
         </div>
       </div>
 
       {/* Format Support Matrix */}
-      <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+      <div className="glass-panel rounded-xl p-5 space-y-3">
+        <div className="flex items-center justify-between border-b border-white/[0.06] pb-2.5">
           <div>
-            <h4 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
-              Comprehensive Format Support Matrix
+            <h4 className="text-xs font-semibold text-zinc-100">
+              Supported Formats
             </h4>
-            <p className="text-xs text-zinc-400">
-              {allFormats.length} registered formats with separate decoder/encoder capabilities
+            <p className="text-[11px] text-zinc-400">
+              {allFormats.length} registered formats with decoder and encoder support
             </p>
           </div>
         </div>

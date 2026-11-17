@@ -378,54 +378,53 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
       {/* Header & Execution Provider Banner */}
-      <div className="glass-panel rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-zinc-800/90 border border-zinc-700/60 text-zinc-100 flex items-center justify-center shadow-sm">
-            <Sparkles className="w-5 h-5 text-zinc-200" />
+      <div className="glass-panel rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center">
+            <ForgeAiIcon className="w-4 h-4 text-zinc-200" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white tracking-tight flex items-center gap-2">
-              Neural Media Studio
-              <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700/80 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {provider.toUpperCase()} Hardware
+            <h3 className="text-xs font-semibold text-zinc-100 tracking-tight flex items-center gap-2">
+              AI Tools
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800/60 text-zinc-400 border border-zinc-700/40">
+                {provider.toUpperCase()}
               </span>
             </h3>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              IS-Net neural background removal & replacement, 2x/4x super-resolution, and HDR clarity. 100% on-device.
+            <p className="text-[11px] text-zinc-400 mt-0.5">
+              Subject cutout, background replacement, and 2x/4x super-resolution
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {/* Tab Switcher */}
-          <div className="flex items-center bg-[#0e0e11] border border-[#222227] rounded-xl p-1 text-xs">
+          <div className="flex items-center bg-[#121216] border border-white/[0.06] rounded-lg p-0.5 text-xs">
             <button
               onClick={() => setActiveTab('workspace')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+              className={`px-2.5 py-1 rounded-md text-xs transition ${
                 activeTab === 'workspace'
-                  ? 'bg-zinc-800 text-white font-semibold shadow-sm border border-zinc-700/80'
+                  ? 'bg-[#181820] text-white font-medium border border-white/[0.08]'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Inference Workspace
+              Workspace
             </button>
             <button
               onClick={() => setActiveTab('models')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${
+              className={`px-2.5 py-1 rounded-md text-xs transition flex items-center gap-1.5 ${
                 activeTab === 'models'
-                  ? 'bg-zinc-800 text-white font-semibold shadow-sm border border-zinc-700/80'
+                  ? 'bg-[#181820] text-white font-medium border border-white/[0.08]'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Cpu className="w-3.5 h-3.5" />
+              <Cpu className="w-3 h-3 text-zinc-400" />
               <span>Models ({cachedModels.length})</span>
             </button>
           </div>
 
           <label className="btn-secondary">
             <FolderOpen className="w-3.5 h-3.5 text-zinc-400" />
-            <span>Import .ONNX</span>
+            <span>Import ONNX</span>
             <input
               ref={customModelInputRef}
               type="file"
@@ -438,7 +437,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 text-xs flex items-center justify-between">
+        <div className="p-3.5 rounded-lg bg-red-950/30 border border-red-800/50 text-red-200 text-xs flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
             <span>{error}</span>
@@ -459,7 +458,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
             /* Upload Dropzone */
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="glass-panel border-2 border-dashed border-[#27272a] hover:border-zinc-600 hover:bg-[#141418] rounded-3xl p-16 text-center cursor-pointer transition-all duration-200 group"
+              className="glass-panel border border-dashed border-white/[0.12] hover:border-white/[0.25] hover:bg-[#0f0f14] rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 group"
             >
               <input
                 ref={fileInputRef}
@@ -472,17 +471,17 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                   }
                 }}
               />
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700/60 text-zinc-200 flex items-center justify-center shadow-md mb-4 group-hover:scale-105 transition-transform duration-200">
-                <ForgeAiIcon className="w-8 h-8 text-zinc-100" />
+              <div className="w-10 h-10 mx-auto rounded-xl bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center mb-3">
+                <ForgeAiIcon className="w-5 h-5 text-zinc-200" />
               </div>
-              <h3 className="text-base font-bold text-white tracking-tight">
-                Select an Image for Neural Processing
+              <h3 className="text-sm font-semibold text-zinc-100 tracking-tight">
+                Drop image to process with AI
               </h3>
-              <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto">
-                IS-Net neural background removal with studio replacement, or 2x/4x super-resolution upscaling.
+              <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
+                Background cutout, color replacement, and 2x/4x super-resolution
               </p>
-              <div className="mt-5">
-                <span className="btn-primary">Browse Image</span>
+              <div className="mt-4">
+                <span className="btn-primary">Choose Image</span>
               </div>
             </div>
           ) : (
