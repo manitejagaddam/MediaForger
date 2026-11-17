@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Settings } from 'lucide-react';
+import { MediaForgeLogo } from './components/StudioIcons';
 
 export const OptionsApp: React.FC = () => {
   const [defaultFormat, setDefaultFormat] = useState('webp');
@@ -15,8 +15,8 @@ export const OptionsApp: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto p-8 space-y-6 text-zinc-100 font-sans bg-[#09090b] min-h-screen">
       <div className="flex items-center gap-3 border-b border-zinc-800/80 pb-4">
-        <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-200">
-          <Settings className="w-5 h-5" />
+        <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center shadow-sm">
+          <MediaForgeLogo className="w-7 h-7" size={28} />
         </div>
         <div>
           <h1 className="text-lg font-bold text-zinc-100">MediaForge Extension Settings</h1>

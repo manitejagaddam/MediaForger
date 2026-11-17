@@ -14,6 +14,7 @@ import {
 import { getStorageQuota } from '@mediaforge/storage';
 import { WasmRuntimeManager } from '@mediaforge/wasm-runtime';
 import { db } from '@mediaforge/database';
+import { ForgeSettingsIcon } from '../components/icons/StudioIcons';
 
 export const SettingsPage: React.FC = () => {
   const [quota, setQuota] = useState<{

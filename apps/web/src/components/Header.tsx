@@ -1,6 +1,7 @@
 import React from 'react';
 import { PageId } from '../types';
-import { Shield, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import { ForgeShieldIcon } from './icons/StudioIcons';
 
 interface HeaderProps {
   activePage: PageId;
@@ -65,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({ activePage }) => {
 
       <div className="flex items-center gap-2.5">
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium">
-          <Shield className="w-3.5 h-3.5 text-zinc-400" />
+          <ForgeShieldIcon className="w-3.5 h-3.5 text-zinc-300" />
           <span>Local & Offline</span>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium">

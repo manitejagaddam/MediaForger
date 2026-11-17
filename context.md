@@ -65,10 +65,11 @@ stateDiagram-v2
 ## 4. Current Workspace State
 
 * **Active Phase**: Phase 1 through Phase 8 core delivery completed and verified.
-* **UI Theme Design System**: Fully overhauled to **Obsidian Dark** (Linear / Raycast / GitHub Dark inspired).
+* **UI Theme Design System**: Fully overhauled to **Obsidian Dark** with bespoke brand iconography.
+  - Custom **MediaForge Master Brand Mark (`logo.svg` & `MediaForgeLogo`)**: Crystalline isometric forge anvil & optical prism monolith with platinum highlights.
+  - Dedicated **Studio Icon System (`StudioIcons.tsx`)**: Bespoke SVG icons for Image, Audio, Video, Document, Archive, AI, Batch, History, Settings, and Privacy.
   - Background: `#09090b`, Surface: `#111114`, Cards: `#141418`, Borders: `#222227`, Hover: `#27272a`.
-  - Zero gradients across the user interface.
-  - Monochromatic, eye-comfort dark palette with crisp `#f4f4f5` text and `#a1a1aa` muted indicators.
+  - Zero gradients across the user interface; crisp `#f4f4f5` text and `#a1a1aa` muted indicators.
   - Micro-animations: card hover physics (`-translate-y-0.5`), tactile button clicks (`active:scale-[0.98]`), animated tab transitions, smooth sliders.
   - Complete consistency across all 11 studio & utility pages.
 * **Apps Built**:

@@ -1,14 +1,11 @@
 import React from 'react';
 import {
-  ShieldCheck,
   Cpu,
   Layers,
   Lock,
-  FileCheck,
-  CheckCircle2,
-  ExternalLink,
 } from 'lucide-react';
 import { FormatRegistry } from '@mediaforge/core';
+import { MediaForgeLogo } from '../components/icons/StudioIcons';
 
 export const AboutPage: React.FC = () => {
   const allFormats = FormatRegistry.getAll();
@@ -18,8 +15,8 @@ export const AboutPage: React.FC = () => {
       {/* Privacy Manifesto Hero */}
       <div className="glass-panel rounded-2xl p-8 space-y-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center shadow-sm">
-            <ShieldCheck className="w-8 h-8" />
+          <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-200 flex items-center justify-center shadow-md">
+            <MediaForgeLogo className="w-10 h-10" size={40} />
           </div>
           <div>
             <h3 className="text-xl font-extrabold text-white tracking-tight">

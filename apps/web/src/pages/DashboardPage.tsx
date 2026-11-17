@@ -2,15 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Upload,
   ArrowRight,
-  Image as ImageIcon,
-  Music,
-  Video,
-  FileText,
-  Archive,
-  Sparkles,
-  Layers,
-  History,
-  ShieldCheck,
   FileCode,
   Zap,
 } from 'lucide-react';
@@ -18,6 +9,18 @@ import { PageId } from '../types';
 import { FileInspector, CapabilityDetector, FormatRegistry } from '@mediaforge/core';
 import { InspectionResult, SystemCapabilities } from '@mediaforge/shared-types';
 import { db, ConversionHistoryItem } from '@mediaforge/database';
+import {
+  MediaForgeLogo,
+  ForgeImageIcon,
+  ForgeAudioIcon,
+  ForgeVideoIcon,
+  ForgeDocumentIcon,
+  ForgeArchiveIcon,
+  ForgeAiIcon,
+  ForgeBatchIcon,
+  ForgeHistoryIcon,
+  ForgeShieldIcon,
+} from '../components/icons/StudioIcons';
 
 interface DashboardPageProps {
   onNavigate: (page: PageId) => void;
@@ -53,7 +56,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     {
       id: 'image' as PageId,
       name: 'Image Studio',
-      icon: ImageIcon,
+      icon: ForgeImageIcon,
       badge: 'Canvas 2D & WASM',
       desc: 'Transcode, compress, resize, crop, and strip metadata from JPEG, PNG, WebP, AVIF, BMP, SVG.',
       formats: ['JPG', 'PNG', 'WebP', 'AVIF', 'BMP', 'SVG'],
@@ -61,7 +64,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     {
       id: 'audio' as PageId,
       name: 'Audio Studio',
-      icon: Music,
+      icon: ForgeAudioIcon,
       badge: 'Web Audio & LAME',
       desc: 'Convert formats, export MP3/WAV, trim, adjust sample rates, normalize volume, and inspect waveforms.',
       formats: ['WAV', 'MP3', 'FLAC', 'OGG', 'OPUS', 'AAC'],
@@ -69,7 +72,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     {
       id: 'video' as PageId,
       name: 'Video Studio',
-      icon: Video,
+      icon: ForgeVideoIcon,
       badge: 'WebCodecs & Canvas',
       desc: 'Extract hardware video frames, inspect codec streams, scrub, step frames, and capture full-res snapshots.',
       formats: ['MP4', 'WebM', 'MKV', 'MOV', 'GIF'],
@@ -77,7 +80,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     {
       id: 'document' as PageId,
       name: 'Document Studio',
-      icon: FileText,
+      icon: ForgeDocumentIcon,
       badge: 'Client-Side Parser',
       desc: 'Convert CSV to JSON, JSON to CSV, normalize text files, and export formatted structures.',
       formats: ['CSV', 'JSON', 'TXT', 'PDF'],
@@ -85,7 +88,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     {
       id: 'archive' as PageId,
       name: 'Archive Studio',
-      icon: Archive,
+      icon: ForgeArchiveIcon,
       badge: 'Protected ZIP',
       desc: 'Create and extract ZIP archives with zip-slip path traversal and archive bomb protection.',
       formats: ['ZIP'],
@@ -93,7 +96,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     {
       id: 'ai' as PageId,
       name: 'AI Neural Studio',
-      icon: Sparkles,
+      icon: ForgeAiIcon,
       badge: 'ONNX WebGPU & WASM',
       desc: 'Run neural super-resolution upscaling (2x/4x) and IS-Net background removal with replacement studio.',
       formats: ['Real-ESRGAN', 'IS-Net', 'ONNX'],
@@ -123,8 +126,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         }`}
       >
         <div className="max-w-xl mx-auto space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center text-zinc-200 shadow-sm transition-transform duration-200 group-hover:scale-105">
-            <Upload className="w-5 h-5 text-zinc-300" />
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-105">
+            <MediaForgeLogo className="w-9 h-9" size={36} />
           </div>
 
           <div>
@@ -255,7 +258,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         <div className="glass-panel rounded-2xl p-5 lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between border-b border-[#222227] pb-3">
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-zinc-300" />
+              <ForgeHistoryIcon className="w-4 h-4 text-zinc-300" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-200">
                 Recent Conversions
               </h4>

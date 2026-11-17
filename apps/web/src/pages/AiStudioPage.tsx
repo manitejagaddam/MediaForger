@@ -33,6 +33,7 @@ import { db, StoredModelCacheEntry } from '@mediaforge/database';
 import { ObjectUrlManager } from '@mediaforge/storage';
 import { FileInspector, ExportManager } from '@mediaforge/core';
 import { InspectionResult } from '@mediaforge/shared-types';
+import { ForgeAiIcon } from '../components/icons/StudioIcons';
 
 interface AiStudioPageProps {
   initialFile?: File | null;
@@ -471,8 +472,8 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                   }
                 }}
               />
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700/60 text-zinc-200 flex items-center justify-center shadow-sm mb-4 group-hover:scale-105 transition-transform duration-200">
-                <Sparkles className="w-7 h-7 text-zinc-300" />
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700/60 text-zinc-200 flex items-center justify-center shadow-md mb-4 group-hover:scale-105 transition-transform duration-200">
+                <ForgeAiIcon className="w-8 h-8 text-zinc-100" />
               </div>
               <h3 className="text-base font-bold text-white tracking-tight">
                 Select an Image for Neural Processing

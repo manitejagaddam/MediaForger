@@ -13,6 +13,7 @@ import { DocumentEngine } from '@mediaforge/document-engine';
 import { FileInspector, ExportManager } from '@mediaforge/core';
 import { InspectionResult } from '@mediaforge/shared-types';
 import { db } from '@mediaforge/database';
+import { ForgeDocumentIcon } from '../components/icons/StudioIcons';
 
 interface DocumentStudioPageProps {
   initialFile?: File | null;
@@ -142,8 +143,8 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
-            <FileText className="w-8 h-8" />
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200 shadow-md">
+            <ForgeDocumentIcon className="w-9 h-9 text-zinc-100" />
           </div>
           <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select a Document or Data File</h3>
           <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">

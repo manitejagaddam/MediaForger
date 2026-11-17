@@ -15,6 +15,7 @@ import { ImageEngine } from '@mediaforge/image-engine';
 import { ArchiveEngine, ArchiveFileEntry } from '@mediaforge/archive-engine';
 import { ExportManager, FileInspector } from '@mediaforge/core';
 import { db } from '@mediaforge/database';
+import { ForgeBatchIcon } from '../components/icons/StudioIcons';
 
 interface BatchItem {
   id: string;
@@ -216,9 +217,13 @@ export const BatchStudioPage: React.FC = () => {
         {items.length === 0 ? (
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-900/30 rounded-xl p-16 text-center text-xs text-zinc-400 cursor-pointer transition"
+            className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-900/30 rounded-xl p-16 text-center text-xs text-zinc-400 cursor-pointer transition group"
           >
-            No files in queue. Click "Add Batch Images" to batch convert multiple assets at once.
+            <div className="w-12 h-12 mx-auto rounded-xl bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-300 mb-3 group-hover:scale-105 transition-transform">
+              <ForgeBatchIcon className="w-6 h-6 text-zinc-300" />
+            </div>
+            <p className="font-semibold text-zinc-200">No files in queue</p>
+            <p className="text-zinc-500 mt-1">Click "Add Batch Images" or drop multiple files here to batch convert assets at once.</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-[500px] overflow-auto">

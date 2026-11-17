@@ -1,20 +1,22 @@
 import React from 'react';
 import {
   LayoutDashboard,
-  Image as ImageIcon,
-  Music,
-  Video,
-  FileText,
-  Archive,
-  Sparkles,
-  Layers,
-  History,
-  Settings,
-  ShieldCheck,
   HardDrive,
-  Cpu,
 } from 'lucide-react';
 import { PageId } from '../types';
+import {
+  MediaForgeLogo,
+  ForgeImageIcon,
+  ForgeAudioIcon,
+  ForgeVideoIcon,
+  ForgeDocumentIcon,
+  ForgeArchiveIcon,
+  ForgeAiIcon,
+  ForgeBatchIcon,
+  ForgeHistoryIcon,
+  ForgeSettingsIcon,
+  ForgeShieldIcon,
+} from './icons/StudioIcons';
 
 interface SidebarProps {
   activePage: PageId;
@@ -29,16 +31,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navItems: { id: PageId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'image', label: 'Image Studio', icon: ImageIcon },
-    { id: 'audio', label: 'Audio Studio', icon: Music },
-    { id: 'video', label: 'Video Studio', icon: Video },
-    { id: 'document', label: 'Document Studio', icon: FileText },
-    { id: 'archive', label: 'Archive Studio', icon: Archive },
-    { id: 'ai', label: 'AI Studio', icon: Sparkles },
-    { id: 'batch', label: 'Batch Processing', icon: Layers },
-    { id: 'history', label: 'Conversion History', icon: History },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'about', label: 'Privacy & Specs', icon: ShieldCheck },
+    { id: 'image', label: 'Image Studio', icon: ForgeImageIcon },
+    { id: 'audio', label: 'Audio Studio', icon: ForgeAudioIcon },
+    { id: 'video', label: 'Video Studio', icon: ForgeVideoIcon },
+    { id: 'document', label: 'Document Studio', icon: ForgeDocumentIcon },
+    { id: 'archive', label: 'Archive Studio', icon: ForgeArchiveIcon },
+    { id: 'ai', label: 'AI Studio', icon: ForgeAiIcon },
+    { id: 'batch', label: 'Batch Processing', icon: ForgeBatchIcon },
+    { id: 'history', label: 'Conversion History', icon: ForgeHistoryIcon },
+    { id: 'settings', label: 'Settings', icon: ForgeSettingsIcon },
+    { id: 'about', label: 'Privacy & Specs', icon: ForgeShieldIcon },
   ];
 
   return (
@@ -46,8 +48,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div>
         {/* Brand */}
         <div className="h-16 flex items-center px-6 gap-3 border-b border-[#1e1e24]">
-          <div className="w-9 h-9 rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center text-zinc-100 shadow-sm">
-            <Cpu className="w-4 h-4 text-zinc-200" />
+          <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-700/60 flex items-center justify-center shadow-sm">
+            <MediaForgeLogo className="w-7 h-7" size={28} />
           </div>
           <div>
             <h1 className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">

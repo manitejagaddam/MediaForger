@@ -15,6 +15,7 @@ import {
 import { ArchiveEngine, ArchiveFileEntry } from '@mediaforge/archive-engine';
 import { ExportManager } from '@mediaforge/core';
 import { db } from '@mediaforge/database';
+import { ForgeArchiveIcon } from '../components/icons/StudioIcons';
 
 interface ArchiveStudioPageProps {
   initialFile?: File | null;
@@ -156,7 +157,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
               : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
           }`}
         >
-          <Archive className="w-4 h-4 text-zinc-300" />
+          <ForgeArchiveIcon className="w-4 h-4 text-zinc-300" />
           <span>Extract & Inspect ZIP</span>
         </button>
       </div>
@@ -326,8 +327,8 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
                   }
                 }}
               />
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
-                <Archive className="w-8 h-8" />
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200 shadow-md">
+                <ForgeArchiveIcon className="w-9 h-9 text-zinc-100" />
               </div>
               <h3 className="text-lg font-bold text-zinc-100">Select a ZIP Archive to Extract</h3>
               <p className="text-xs text-zinc-400 mt-1">

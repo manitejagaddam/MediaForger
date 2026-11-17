@@ -153,3 +153,22 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
     10. **Zero-Alert Policy Across Monorepo**: Replaced all remaining `alert(...)` calls in `ImageStudioPage`, `AudioStudioPage`, `VideoStudioPage`, `DocumentStudioPage`, `ArchiveStudioPage`, `AiStudioPage`, and `SettingsPage` with accessible, dismissible in-app error notification banners. Verified with `git grep "alert("` returning 0 occurrences.
     11. **High-Precision Multi-Border Saliency Engine (`packages/ai-engine`)**: Overhauled local segmentation algorithm to sample multi-border perimeter color clusters, compute spatial centrality priors, and use smooth sigmoidal alpha transitions, ensuring robust background detection even on complex scenes when offline.
   - Verified with full Turborepo monorepo compilation (17/17 packages built successfully) and Vitest unit test suite (8/8 test files, 36/36 tests passing).
+* **2026-11-17 15:22**: Bespoke Logo & Dedicated Studio Icon System:
+  - Addressed user request to replace simple generic icons and logo with a special, high-end visual design system.
+  - Crafted the **MediaForge Master Brand Mark (`logo.svg` & `MediaForgeLogo`)**:
+    - Multi-faceted isometric forge anvil & crystalline optical prism monolith (stylized 'M' and 'F').
+    - Precision platinum highlights (`#ffffff` / `#e4e4e7`), chiseled dark metallic facets (`#3f3f46`, `#27272a`, `#18181b`), and central radiant diamond energy core representing on-device local computation.
+    - Updated PWA `logo.svg`, app header, sidebar, dashboard hero dropzone, extension popup, and extension options.
+  - Designed & implemented a dedicated suite of bespoke SVG studio icons in `StudioIcons.tsx`:
+    - `ForgeImageIcon`: Camera aperture iris with 6 interlocking blades, optical pupil, and corner crop brackets.
+    - `ForgeAudioIcon`: Acoustic chamber baffle with dynamic multi-band logarithmic waveform frequencies and decibel peak markers.
+    - `ForgeVideoIcon`: Cinematic 16:9 widescreen viewport with celluloid frame sprockets and stereoscopic playback aperture.
+    - `ForgeDocumentIcon`: Folded blueprint matrix sheet with JSON `{ }` keys and CSV tabular column cells.
+    - `ForgeArchiveIcon`: Heavy-duty armored compression vault crate with reinforcement ribs and cryptographic padlock.
+    - `ForgeAiIcon`: Synaptic tensor lattice with 4-point quantum diamond intelligence core and peripheral nodes.
+    - `ForgeBatchIcon`: Staggered 3D parallel process wafers with atomic pipeline flow indicators.
+    - `ForgeHistoryIcon`: Chronometer quantum timeline dial with 360° precision tick index and rewind arc.
+    - `ForgeShieldIcon`: Armored biometric fortress shield with local zero-egress hardware lock.
+    - `ForgeSettingsIcon`: Precision engineered planetary calibration gear with axle teeth.
+  - Integrated across all 11 studio & utility pages in `apps/web` and browser extension `apps/extension`.
+  - Verified 17/17 Turborepo package builds passing and 36/36 Vitest unit tests passing.

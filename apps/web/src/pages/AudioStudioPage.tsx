@@ -21,6 +21,7 @@ import { FileInspector, ExportManager } from '@mediaforge/core';
 import { AudioProcessingOptions, InspectionResult } from '@mediaforge/shared-types';
 import { ObjectUrlManager } from '@mediaforge/storage';
 import { db } from '@mediaforge/database';
+import { ForgeAudioIcon } from '../components/icons/StudioIcons';
 
 interface AudioStudioPageProps {
   initialFile?: File | null;
@@ -251,8 +252,8 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
               }
             }}
           />
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200">
-            <Music className="w-8 h-8" />
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-200 shadow-md">
+            <ForgeAudioIcon className="w-9 h-9 text-zinc-100" />
           </div>
           <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Select an Audio Track to Forge</h3>
           <p className="text-xs text-zinc-400 mt-2 max-w-md mx-auto">

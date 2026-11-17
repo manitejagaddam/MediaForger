@@ -1,11 +1,69 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
   <defs>
-    <linearGradient id="mf_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3B82F6" />
-      <stop offset="100%" stop-color="#8B5CF6" />
+    <!-- Dark Metallic Obsidian Shading -->
+    <linearGradient id="mf_base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="100%" stop-color="#09090b" />
+    </linearGradient>
+
+    <!-- Precision Platinum Highlight Edge -->
+    <linearGradient id="mf_edge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85" />
+      <stop offset="50%" stop-color="#71717a" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#27272a" stop-opacity="0.8" />
+    </linearGradient>
+
+    <!-- Forge Core Radiant Glow -->
+    <radialGradient id="mf_core_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Facet Gradients for 3D Chiseled Anvil & Monolith -->
+    <linearGradient id="facet_left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3f3f46" />
+      <stop offset="100%" stop-color="#18181b" />
+    </linearGradient>
+    <linearGradient id="facet_right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#27272a" />
+      <stop offset="100%" stop-color="#09090b" />
+    </linearGradient>
+    <linearGradient id="facet_top" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#f4f4f5" />
+      <stop offset="100%" stop-color="#71717a" />
     </linearGradient>
   </defs>
-  <rect width="100" height="100" rx="24" fill="url(#mf_grad)" />
-  <path d="M28 72V28L50 50L72 28V72" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
 
+  <!-- Outer Isometric Shield Container -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#mf_base)" stroke="url(#mf_edge)" stroke-width="2" />
+  
+  <!-- Subtle Internal Grid / Calibration Frame -->
+  <circle cx="64" cy="64" r="44" stroke="#27272a" stroke-width="1" stroke-dasharray="2 4" opacity="0.6" />
+  <circle cx="64" cy="64" r="28" fill="url(#mf_core_glow)" />
+
+  <!-- The Forge Anvil & Media Monolith (Stylized M + F) -->
+  <g>
+    <!-- Left Wing (M left Pillar) -->
+    <polygon points="32,88 32,46 46,36 46,78" fill="url(#facet_left)" stroke="#52525b" stroke-width="1" />
+    
+    <!-- Right Wing (M right Pillar) -->
+    <polygon points="96,88 96,46 82,36 82,78" fill="url(#facet_right)" stroke="#3f3f46" stroke-width="1" />
+
+    <!-- Central Chevron / Keystone Anvil Core (The 'V' and 'F' crossbar) -->
+    <polygon points="46,36 64,54 82,36 64,22" fill="url(#facet_top)" />
+    
+    <!-- Central Forge Diamond Spire -->
+    <polygon points="64,54 74,66 64,96 54,66" fill="#18181b" stroke="#71717a" stroke-width="1.5" />
+    <polygon points="64,54 74,66 64,96" fill="#27272a" />
+    <polygon points="64,54 64,96 54,66" fill="#3f3f46" />
+
+    <!-- Center Radiant Diamond Core (Local Compute Power) -->
+    <polygon points="64,62 70,68 64,74 58,68" fill="#ffffff" />
+    <circle cx="64" cy="68" r="8" fill="#ffffff" opacity="0.25" />
+
+    <!-- Horizontal Precision Calibration Ticks (Forge Base) -->
+    <line x1="36" y1="88" x2="92" y2="88" stroke="#ffffff" stroke-opacity="0.85" stroke-width="2" stroke-linecap="round" />
+    <line x1="46" y1="94" x2="82" y2="94" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" />
+  </g>
+</svg>

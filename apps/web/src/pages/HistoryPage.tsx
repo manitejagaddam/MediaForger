@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { db, ConversionHistoryItem } from '@mediaforge/database';
 import { ExportManager } from '@mediaforge/core';
+import { ForgeHistoryIcon } from '../components/icons/StudioIcons';
 
 export const HistoryPage: React.FC = () => {
   const [history, setHistory] = useState<ConversionHistoryItem[]>([]);
@@ -105,7 +106,11 @@ export const HistoryPage: React.FC = () => {
 
         {filteredHistory.length === 0 ? (
           <div className="p-16 text-center text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-            No conversion records found in local IndexedDB.
+            <div className="w-12 h-12 mx-auto rounded-xl bg-zinc-850 border border-zinc-700/60 flex items-center justify-center text-zinc-400 mb-3 shadow-sm">
+              <ForgeHistoryIcon className="w-6 h-6 text-zinc-400" />
+            </div>
+            <p className="font-semibold text-zinc-300">No conversion records yet</p>
+            <p className="text-zinc-500 mt-1">Processed media conversions will appear here with savings analytics.</p>
           </div>
         ) : (
           <div className="space-y-2">
