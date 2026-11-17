@@ -12,7 +12,8 @@
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
     "@mediaforge/database": "workspace:*",
-    "@mediaforge/shared-types": "workspace:*"
+    "@mediaforge/shared-types": "workspace:*",
+    "onnxruntime-web": "1.21.0"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

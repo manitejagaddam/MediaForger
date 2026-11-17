@@ -21,6 +21,12 @@ import {
   Layers,
   AlertCircle,
   X,
+  Target,
+  Maximize2,
+  Eye,
+  SlidersHorizontal,
+  Crosshair,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   AIEngine,
@@ -41,6 +47,9 @@ interface AiStudioPageProps {
   onSendToImageStudio?: (file: File) => void;
 }
 
+type PointerTool = 'inspect' | 'pin-fg' | 'eyedropper-bg';
+type ViewMode = 'split' | 'composite' | 'original' | 'matte';
+
 export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   initialFile,
   onClearFile,
@@ -59,9 +68,12 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   // Result state
   const [result, setResult] = useState<AIProcessResult | null>(null);
   const [outputUrl, setOutputUrl] = useState<string | null>(null);
+  const [matteUrl, setMatteUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [copiedBase64, setCopiedBase64] = useState(false);
   const [splitSliderPos, setSplitSliderPos] = useState(50); // 0 to 100%
+  const [viewMode, setViewMode] = useState<ViewMode>('split');
+  const [pointerTool, setPointerTool] = useState<PointerTool>('inspect');
 
   // Upscale parameters
   const [upscaleFactor, setUpscaleFactor] = useState<2 | 4>(2);
@@ -78,20 +90,23 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const [bgBlurRadius, setBgBlurRadius] = useState<number>(25);
 
   // Minute Edge & Segmentation Tuning
-  const [bgThreshold, setBgThreshold] = useState<number>(45); // 1 to 100
-  const [bgFeather, setBgFeather] = useState<number>(3); // 0 to 15 px
+  const [bgThreshold, setBgThreshold] = useState<number>(50); // 1 to 100
+  const [bgFeather, setBgFeather] = useState<number>(3); // 0 to 20 px
   const [bgEdgeShift, setBgEdgeShift] = useState<number>(-2); // -10 to +10 px
   const [invertMask, setInvertMask] = useState<boolean>(false);
+  const [defringe, setDefringe] = useState<boolean>(true);
+
+  // Subject Targeting Points (Interactive Canvas Sampling)
+  const [sampleFgPoint, setSampleFgPoint] = useState<[number, number] | null>(null); // [normalizedX, normalizedY]
+  const [sampleFgColor, setSampleFgColor] = useState<[number, number, number] | null>(null);
+  const [sampleBgPoint, setSampleBgPoint] = useState<[number, number] | null>(null);
+  const [sampleKeyColor, setSampleKeyColor] = useState<[number, number, number] | null>(null);
 
   // Drop Shadow for Compositing
   const [enableShadow, setEnableShadow] = useState<boolean>(false);
   const [shadowOpacity, setShadowOpacity] = useState<number>(40);
   const [shadowBlur, setShadowBlur] = useState<number>(20);
   const [shadowOffsetY, setShadowOffsetY] = useState<number>(10);
-
-  // Eyedropper Key Color Sampling
-  const [sampleKeyColor, setSampleKeyColor] = useState<[number, number, number] | null>(null);
-  const [isEyedropperActive, setIsEyedropperActive] = useState<boolean>(false);
 
   // Output export options
   const [outputFormat, setOutputFormat] = useState<'png' | 'jpeg' | 'webp'>('png');
@@ -105,31 +120,37 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
   // Download / import refs
   const [downloadingModelId, setDownloadingModelId] = useState<string | null>(null);
+  const [customModelTask, setCustomModelTask] = useState<
+    'upscale' | 'background-removal' | 'enhancement' | 'custom'
+  >('custom');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const customModelInputRef = useRef<HTMLInputElement>(null);
   const previewImgRef = useRef<HTMLImageElement>(null);
 
-  // Studio Solid Swatches (Subtle, professional studio neutrals)
+  // Studio Solid Swatches (Professional neutral lighting palette)
   const SOLID_SWATCHES = [
     { label: 'Clean White', color: '#ffffff' },
     { label: 'Studio Charcoal', color: '#18181b' },
     { label: 'Obsidian Black', color: '#09090b' },
+    { label: 'Pure Black', color: '#000000' },
     { label: 'Neutral Gray', color: '#71717a' },
     { label: 'Deep Navy', color: '#0f172a' },
     { label: 'Slate Muted', color: '#334155' },
-    { label: 'Silver Gray', color: '#d4d4d8' },
-    { label: 'Cool Zinc', color: '#27272a' },
+    { label: 'Silver Highkey', color: '#e4e4e7' },
+    { label: 'Chroma Green', color: '#00ff00' },
+    { label: 'Chroma Blue', color: '#0000ff' },
   ];
 
-  // Monochromatic Studio Lighting Gradients (No eye-straining rainbow colors)
+  // Monochromatic Studio Lighting Gradients
   const GRADIENT_PRESETS = [
     { name: 'Dark Vignette', colors: ['#18181b', '#09090b'] },
-    { name: 'Studio Neutral', colors: ['#27272a', '#18181b'] },
+    { name: 'Studio Spotlight', colors: ['#27272a', '#141418'] },
     { name: 'Slate Ambient', colors: ['#1e293b', '#0f172a'] },
     { name: 'Monochrome Soft', colors: ['#3f3f46', '#18181b'] },
     { name: 'Studio Highkey', colors: ['#f4f4f5', '#d4d4d8'] },
-    { name: 'Subtle Spotlight', colors: ['#222227', '#0e0e11'] },
+    { name: 'Warm Amber', colors: ['#292524', '#0c0a09'] },
   ];
 
   useEffect(() => {
@@ -146,8 +167,10 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       setInspection(null);
       if (inputUrl) ObjectUrlManager.revoke(inputUrl);
       if (outputUrl) ObjectUrlManager.revoke(outputUrl);
+      if (matteUrl) ObjectUrlManager.revoke(matteUrl);
       setInputUrl(null);
       setOutputUrl(null);
+      setMatteUrl(null);
     }
   }, [initialFile]);
 
@@ -155,6 +178,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
     return () => {
       if (inputUrl) ObjectUrlManager.revoke(inputUrl);
       if (outputUrl) ObjectUrlManager.revoke(outputUrl);
+      if (matteUrl) ObjectUrlManager.revoke(matteUrl);
       if (bgImageUrl) ObjectUrlManager.revoke(bgImageUrl);
     };
   }, []);
@@ -168,10 +192,19 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
     setFile(selectedFile);
     setResult(null);
     setSampleKeyColor(null);
-    setIsEyedropperActive(false);
+    setSampleFgColor(null);
+    setSampleFgPoint(null);
+    setSampleBgPoint(null);
+    setPointerTool('inspect');
+    setViewMode('split');
+
     if (outputUrl) {
       ObjectUrlManager.revoke(outputUrl);
       setOutputUrl(null);
+    }
+    if (matteUrl) {
+      ObjectUrlManager.revoke(matteUrl);
+      setMatteUrl(null);
     }
 
     const inspected = await FileInspector.inspect(selectedFile);
@@ -196,7 +229,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       await AIEngine.installModel(model);
       await loadCachedModels();
     } catch (err: any) {
-      setError(`Model download error: ${err.message}`);
+      setError(`Model cache error: ${err.message}`);
     } finally {
       setDownloadingModelId(null);
     }
@@ -207,7 +240,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       const customFile = e.target.files[0];
       setError(null);
       try {
-        const entry = await AIEngine.importCustomModel(customFile);
+        const entry = await AIEngine.importCustomModel(customFile, customModelTask);
         await loadCachedModels();
         setSelectedModelId(entry.modelId);
         setActiveTab('workspace');
@@ -224,12 +257,23 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
   const handleSelectAndUseModel = (modelId: string) => {
     setSelectedModelId(modelId);
+    // Find task
+    const model =
+      REGISTERED_AI_MODELS.find((m) => m.id === modelId) ||
+      cachedModels.find((m) => m.modelId === modelId);
+    if (model && 'task' in model) {
+      if (model.task === 'upscale') {
+        if (modelId.includes('x4')) setUpscaleFactor(4);
+        else setUpscaleFactor(2);
+      }
+    }
     setActiveTab('workspace');
   };
 
   const activeModel =
     REGISTERED_AI_MODELS.find((m) => m.id === selectedModelId) ||
     cachedModels.find((m) => m.modelId === selectedModelId);
+
   const activeTask =
     activeModel && 'task' in activeModel && activeModel.task
       ? activeModel.task
@@ -241,8 +285,9 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
   const isSelectedModelCached = cachedModels.some((m) => m.modelId === selectedModelId);
 
+  // Interactive Canvas Click Handler
   const handlePreviewClick = (e: React.MouseEvent<HTMLImageElement>) => {
-    if (!isEyedropperActive || !file || !previewImgRef.current) return;
+    if (pointerTool === 'inspect' || !file || !previewImgRef.current) return;
 
     const img = previewImgRef.current;
     const rect = img.getBoundingClientRect();
@@ -252,8 +297,11 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
     const naturalWidth = img.naturalWidth || inspection?.width || 100;
     const naturalHeight = img.naturalHeight || inspection?.height || 100;
 
-    const pixelX = Math.floor((clickX / rect.width) * naturalWidth);
-    const pixelY = Math.floor((clickY / rect.height) * naturalHeight);
+    const normX = Math.max(0, Math.min(1, clickX / rect.width));
+    const normY = Math.max(0, Math.min(1, clickY / rect.height));
+
+    const pixelX = Math.floor(normX * naturalWidth);
+    const pixelY = Math.floor(normY * naturalHeight);
 
     const canvas = document.createElement('canvas');
     canvas.width = naturalWidth;
@@ -269,13 +317,23 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       1
     ).data;
 
-    setSampleKeyColor([pixel[0], pixel[1], pixel[2]]);
-    setIsEyedropperActive(false);
+    const sampledRgb: [number, number, number] = [pixel[0], pixel[1], pixel[2]];
+
+    if (pointerTool === 'pin-fg') {
+      setSampleFgPoint([normX, normY]);
+      setSampleFgColor(sampledRgb);
+      setPointerTool('inspect');
+    } else if (pointerTool === 'eyedropper-bg') {
+      setSampleBgPoint([normX, normY]);
+      setSampleKeyColor(sampledRgb);
+      setPointerTool('inspect');
+    }
   };
 
   const handleExecuteAI = async () => {
     if (!file) return;
 
+    // Ensure model is cached
     if (!isSelectedModelCached) {
       const modelMeta = REGISTERED_AI_MODELS.find((m) => m.id === selectedModelId);
       if (modelMeta) {
@@ -284,6 +342,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
     }
 
     setIsProcessing(true);
+    setError(null);
     try {
       let res: AIProcessResult;
 
@@ -302,11 +361,16 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
         };
 
         res = await AIEngine.removeBackground(file, {
+          modelId: selectedModelId,
           threshold: bgThreshold,
           featherRadius: bgFeather,
           edgeShift: bgEdgeShift,
           invertMask,
+          defringe,
           sampleKeyColor,
+          sampleFgColor,
+          sampleFgPoint,
+          sampleBgPoint,
           mode: bgMode,
           backgroundColor: bgColor,
           gradient: gradientConfig,
@@ -316,14 +380,21 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
           outputFormat: bgMode === 'transparent' ? 'png' : outputFormat,
           outputQuality,
         });
+
+        if (res.matteBlob) {
+          if (matteUrl) ObjectUrlManager.revoke(matteUrl);
+          setMatteUrl(ObjectUrlManager.create(res.matteBlob));
+        }
       } else if (activeTask === 'enhancement') {
         res = await AIEngine.enhanceImage(file, {
+          modelId: selectedModelId,
           clarity,
           vibrance,
           hdrBoost,
         });
       } else {
         res = await AIEngine.upscaleImage(file, {
+          modelId: selectedModelId,
           scale: upscaleFactor,
           unsharpStrength: unsharpStrength / 100,
           denoise,
@@ -336,7 +407,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       setOutputUrl(newUrl);
 
       const ext = bgMode === 'transparent' ? 'png' : outputFormat;
-      const outputName = `${file.name.replace(/\.[^/.]+$/, '')}_ai_${res.modelUsed}.${ext}`;
+      const outputName = `${file.name.replace(/\.[^/.]+$/, '')}_ai_${res.modelUsed.replace(/[^a-zA-Z0-9_-]/g, '_')}.${ext}`;
       await db.history.put({
         id: `ai_${Date.now()}`,
         jobId: `job_${Date.now()}`,
@@ -359,7 +430,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const handleDownloadResult = () => {
     if (!result || !file) return;
     const ext = bgMode === 'transparent' ? 'png' : outputFormat;
-    const outputName = `${file.name.replace(/\.[^/.]+$/, '')}_ai_${result.modelUsed}.${ext}`;
+    const outputName = `${file.name.replace(/\.[^/.]+$/, '')}_ai_${result.modelUsed.replace(/[^a-zA-Z0-9_-]/g, '_')}.${ext}`;
     ExportManager.download(result.blob, outputName);
   };
 
@@ -380,28 +451,47 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
       {/* Header & Execution Provider Banner */}
       <div className="glass-panel rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-lg bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center shrink-0">
             <ForgeAiIcon className="w-4 h-4 text-zinc-200" />
           </div>
           <div>
             <h3 className="text-xs font-semibold text-zinc-100 tracking-tight flex items-center gap-2">
-              AI Tools
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800/60 text-zinc-400 border border-zinc-700/40">
-                {provider.toUpperCase()}
+              AI Neural Studio
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800/80 text-zinc-300 border border-zinc-700/60 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {provider.toUpperCase()} SIMD
               </span>
             </h3>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              Subject cutout, background replacement, and 2x/4x super-resolution
+              Deep neural segmentation, sub-pixel matting, background replacement, and 2x/4x super-resolution
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Active Model Pill */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#121216] border border-white/[0.08] text-xs">
+            <Cpu className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="text-zinc-400 text-[11px]">Active:</span>
+            <span className="text-zinc-200 font-medium text-[11px] truncate max-w-[150px]">
+              {activeModel?.name || selectedModelId}
+            </span>
+            {isSelectedModelCached ? (
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
+                CACHED
+              </span>
+            ) : (
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-400 border border-amber-800/40">
+                READY
+              </span>
+            )}
+          </div>
+
           {/* Tab Switcher */}
           <div className="flex items-center bg-[#121216] border border-white/[0.06] rounded-lg p-0.5 text-xs">
             <button
               onClick={() => setActiveTab('workspace')}
-              className={`px-2.5 py-1 rounded-md text-xs transition ${
+              className={`px-3 py-1.5 rounded-md text-xs transition ${
                 activeTab === 'workspace'
                   ? 'bg-[#181820] text-white font-medium border border-white/[0.08]'
                   : 'text-zinc-400 hover:text-white'
@@ -411,7 +501,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('models')}
-              className={`px-2.5 py-1 rounded-md text-xs transition flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs transition flex items-center gap-1.5 ${
                 activeTab === 'models'
                   ? 'bg-[#181820] text-white font-medium border border-white/[0.08]'
                   : 'text-zinc-400 hover:text-white'
@@ -471,14 +561,14 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                   }
                 }}
               />
-              <div className="w-10 h-10 mx-auto rounded-xl bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center mb-3">
-                <ForgeAiIcon className="w-5 h-5 text-zinc-200" />
+              <div className="w-12 h-12 mx-auto rounded-xl bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center mb-3">
+                <ForgeAiIcon className="w-6 h-6 text-zinc-200" />
               </div>
               <h3 className="text-sm font-semibold text-zinc-100 tracking-tight">
-                Drop image to process with AI
+                Drop image to process with AI Neural Studio
               </h3>
-              <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
-                Background cutout, color replacement, and 2x/4x super-resolution
+              <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto">
+                Subject cutout, portrait bokeh blur, studio lighting backdrops, and 2x/4x super-resolution
               </p>
               <div className="mt-4">
                 <span className="btn-primary">Choose Image</span>
@@ -486,10 +576,11 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Left Column: Visual Canvas & Interactive Split Slider (7 cols) */}
+              {/* Left Column: Interactive Visual Canvas (7 cols) */}
               <div className="lg:col-span-7 space-y-6">
                 <div className="glass-panel rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center justify-between border-b border-[#222227] pb-3">
+                  {/* Image Header & View Mode Switcher */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#222227] pb-3 gap-3">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-200 flex items-center justify-center font-mono font-bold text-xs uppercase">
                         {inspection?.detectedFormat || 'IMG'}
@@ -502,21 +593,85 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      {activeTask === 'background-removal' && (
+                    {/* View Mode Buttons */}
+                    <div className="flex items-center gap-1.5 bg-[#121216] border border-white/[0.06] rounded-lg p-0.5 text-xs">
+                      <button
+                        onClick={() => setViewMode('split')}
+                        className={`px-2.5 py-1 rounded text-xs transition ${
+                          viewMode === 'split' ? 'bg-[#181820] text-white font-medium' : 'text-zinc-400 hover:text-white'
+                        }`}
+                        title="Interactive Before / After Split Slider"
+                      >
+                        Split
+                      </button>
+                      <button
+                        onClick={() => setViewMode('composite')}
+                        className={`px-2.5 py-1 rounded text-xs transition ${
+                          viewMode === 'composite' ? 'bg-[#181820] text-white font-medium' : 'text-zinc-400 hover:text-white'
+                        }`}
+                        title="View Final Composite Output"
+                      >
+                        Output
+                      </button>
+                      <button
+                        onClick={() => setViewMode('original')}
+                        className={`px-2.5 py-1 rounded text-xs transition ${
+                          viewMode === 'original' ? 'bg-[#181820] text-white font-medium' : 'text-zinc-400 hover:text-white'
+                        }`}
+                        title="View Original Input"
+                      >
+                        Original
+                      </button>
+                      {matteUrl && (
                         <button
-                          onClick={() => setIsEyedropperActive((prev) => !prev)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                            isEyedropperActive
-                              ? 'bg-white text-zinc-950 font-semibold shadow-sm'
-                              : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/80'
+                          onClick={() => setViewMode('matte')}
+                          className={`px-2.5 py-1 rounded text-xs transition ${
+                            viewMode === 'matte' ? 'bg-[#181820] text-white font-medium' : 'text-zinc-400 hover:text-white'
                           }`}
-                          title="Click on the image to sample the background color to remove"
+                          title="View High-Contrast Alpha Matte Mask"
                         >
-                          <Pipette className="w-3.5 h-3.5" />
-                          <span>{isEyedropperActive ? 'Click to Sample' : 'Eyedropper'}</span>
+                          Matte
                         </button>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Interactive Sampling Tools Bar (For Subject & Background Targeting) */}
+                  {activeTask === 'background-removal' && (
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-[#101014] border border-zinc-800 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 pl-1">
+                          Canvas Tools:
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => setPointerTool(pointerTool === 'pin-fg' ? 'inspect' : 'pin-fg')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                            pointerTool === 'pin-fg'
+                              ? 'bg-purple-600 text-white font-semibold shadow-md'
+                              : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/80'
+                          }`}
+                          title="Click on the subject (face/clothing) on the image to lock foreground"
+                        >
+                          <Target className="w-3.5 h-3.5" />
+                          <span>{pointerTool === 'pin-fg' ? 'Click Subject on Image' : 'Target Subject (Pin)'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setPointerTool(pointerTool === 'eyedropper-bg' ? 'inspect' : 'eyedropper-bg')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                            pointerTool === 'eyedropper-bg'
+                              ? 'bg-white text-zinc-950 font-semibold shadow-md'
+                              : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/80'
+                          }`}
+                          title="Click on the background to sample and eliminate that color"
+                        >
+                          <Pipette className="w-3.5 h-3.5" />
+                          <span>{pointerTool === 'eyedropper-bg' ? 'Click Background on Image' : 'Eyedropper (BG)'}</span>
+                        </button>
+                      </div>
 
                       <button
                         onClick={() => {
@@ -524,43 +679,52 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           setResult(null);
                           onClearFile?.();
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-750 text-xs text-zinc-400 hover:text-white border border-zinc-700/70 transition"
+                        className="px-2.5 py-1 rounded bg-zinc-850 hover:bg-zinc-800 text-[11px] text-zinc-400 hover:text-white transition"
                       >
                         Change Image
                       </button>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Eyedropper Notice Banner */}
-                  {isEyedropperActive && (
-                    <div className="p-2.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-zinc-200 text-xs flex items-center justify-between">
+                  {/* Active Tool Guidance Banner */}
+                  {pointerTool !== 'inspect' && (
+                    <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-800/60 text-purple-200 text-xs flex items-center justify-between animate-fadeIn">
                       <div className="flex items-center gap-2">
-                        <Pipette className="w-4 h-4 text-zinc-300" />
-                        <span>Eyedropper active: Click anywhere on the image below to sample target color.</span>
+                        {pointerTool === 'pin-fg' ? (
+                          <>
+                            <Target className="w-4 h-4 text-purple-400 animate-pulse" />
+                            <span>Click anywhere on the primary person or object to lock foreground subject.</span>
+                          </>
+                        ) : (
+                          <>
+                            <Pipette className="w-4 h-4 text-purple-400 animate-pulse" />
+                            <span>Click anywhere on the background to sample target color to eliminate.</span>
+                          </>
+                        )}
                       </div>
                       <button
-                        onClick={() => setIsEyedropperActive(false)}
-                        className="text-[11px] font-semibold text-zinc-400 hover:text-white underline"
+                        onClick={() => setPointerTool('inspect')}
+                        className="text-[11px] font-semibold text-purple-300 hover:text-white underline"
                       >
                         Cancel
                       </button>
                     </div>
                   )}
 
-                  {/* Interactive Split-Screen Comparison Viewport */}
-                  <div className="relative rounded-xl bg-[#09090b] border border-[#222227] overflow-hidden min-h-[360px] flex items-center justify-center select-none">
+                  {/* Interactive Viewport Canvas */}
+                  <div className="relative rounded-xl bg-[#09090b] border border-[#222227] overflow-hidden min-h-[380px] flex items-center justify-center select-none">
                     {/* Checkerboard background for transparency preview */}
                     <div
-                      className="absolute inset-0 opacity-10"
+                      className="absolute inset-0 opacity-15"
                       style={{
                         backgroundImage: `radial-gradient(#71717a 1px, transparent 1px)`,
                         backgroundSize: '16px 16px',
                       }}
                     />
 
-                    {result && outputUrl && inputUrl ? (
-                      /* Before / After Interactive Split-View */
-                      <div className="relative w-full h-[420px] overflow-hidden flex items-center justify-center">
+                    {/* Mode 1: Split-View Slider */}
+                    {viewMode === 'split' && result && outputUrl && inputUrl ? (
+                      <div className="relative w-full h-[440px] overflow-hidden flex items-center justify-center">
                         {/* Processed (After) Image */}
                         <img
                           src={outputUrl}
@@ -581,27 +745,27 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                             alt="Original Input"
                             onClick={handlePreviewClick}
                             className={`max-h-full max-w-full object-contain ${
-                              isEyedropperActive ? 'cursor-crosshair' : ''
+                              pointerTool !== 'inspect' ? 'cursor-crosshair ring-2 ring-purple-400' : ''
                             }`}
                           />
                         </div>
 
                         {/* Divider Line & Handle */}
                         <div
-                          className="absolute top-0 bottom-0 w-0.5 bg-white/80 pointer-events-none shadow-sm"
+                          className="absolute top-0 bottom-0 w-0.5 bg-white pointer-events-none shadow-lg"
                           style={{ left: `${splitSliderPos}%` }}
                         >
-                          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-zinc-900 border-2 border-white flex items-center justify-center shadow text-[8px] font-bold text-white">
+                          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-zinc-950 border-2 border-white flex items-center justify-center shadow-md text-[9px] font-bold text-white">
                             ↔
                           </div>
                         </div>
 
                         {/* Labels */}
                         <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
-                          Original
+                          Original Input
                         </div>
                         <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-200 border border-zinc-800">
-                          {bgMode === 'transparent' ? 'Cutout (Alpha)' : `Replaced (${bgMode})`}
+                          {bgMode === 'transparent' ? 'Alpha Cutout' : `Replaced (${bgMode})`}
                         </div>
 
                         {/* Scrub Range Slider */}
@@ -614,45 +778,141 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           className="absolute bottom-3 left-6 right-6 opacity-75 hover:opacity-100 transition cursor-pointer"
                         />
                       </div>
+                    ) : viewMode === 'matte' && matteUrl ? (
+                      /* Mode 2: Alpha Matte Mask View */
+                      <div className="relative p-2 flex items-center justify-center max-h-[440px]">
+                        <img
+                          src={matteUrl}
+                          alt="Alpha Matte Mask"
+                          className="max-h-[400px] max-w-full object-contain rounded-lg"
+                        />
+                        <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
+                          Alpha Silhouette Mask
+                        </div>
+                      </div>
+                    ) : viewMode === 'composite' && outputUrl ? (
+                      /* Mode 3: Clean Composite Output Only */
+                      <div className="relative p-2 flex items-center justify-center max-h-[440px]">
+                        <img
+                          src={outputUrl}
+                          alt="AI Output Composite"
+                          className="max-h-[400px] max-w-full object-contain rounded-lg"
+                        />
+                        <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
+                          {result?.modelUsed}
+                        </div>
+                      </div>
                     ) : (
-                      /* Single Input Preview with Eyedropper Support */
+                      /* Mode 4: Original Input Preview with Interactive Click Sampling */
                       inputUrl && (
-                        <div className="relative p-2 flex items-center justify-center max-h-[420px]">
+                        <div className="relative p-2 flex items-center justify-center max-h-[440px]">
                           <img
                             ref={previewImgRef}
                             src={inputUrl}
                             alt="Input Preview"
                             onClick={handlePreviewClick}
-                            className={`max-h-[380px] max-w-full object-contain rounded-lg ${
-                              isEyedropperActive ? 'cursor-crosshair ring-2 ring-zinc-400' : ''
+                            className={`max-h-[400px] max-w-full object-contain rounded-lg ${
+                              pointerTool !== 'inspect' ? 'cursor-crosshair ring-2 ring-purple-400' : ''
                             }`}
                           />
+
+                          {/* Pinned Subject Marker */}
+                          {sampleFgPoint && (
+                            <div
+                              className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-purple-600 shadow-lg pointer-events-none flex items-center justify-center animate-bounce"
+                              style={{
+                                left: `${sampleFgPoint[0] * 100}%`,
+                                top: `${sampleFgPoint[1] * 100}%`,
+                              }}
+                            >
+                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                            </div>
+                          )}
+
+                          {/* Eyedropper Sampled Background Marker */}
+                          {sampleBgPoint && (
+                            <div
+                              className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-red-600 shadow-lg pointer-events-none flex items-center justify-center"
+                              style={{
+                                left: `${sampleBgPoint[0] * 100}%`,
+                                top: `${sampleBgPoint[1] * 100}%`,
+                              }}
+                            >
+                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                            </div>
+                          )}
                         </div>
                       )
                     )}
                   </div>
 
-                  {/* Sampled Eyedropper Color Info Strip */}
-                  {sampleKeyColor && (
-                    <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3">
-                        <span className="text-zinc-400">Sampled Key Color:</span>
-                        <div
-                          className="w-5 h-5 rounded-md border border-zinc-700 shadow"
-                          style={{
-                            backgroundColor: `rgb(${sampleKeyColor[0]}, ${sampleKeyColor[1]}, ${sampleKeyColor[2]})`,
-                          }}
-                        />
-                        <span className="font-mono text-zinc-200 font-medium">
-                          RGB({sampleKeyColor[0]}, {sampleKeyColor[1]}, {sampleKeyColor[2]})
-                        </span>
+                  {/* Sampling Badges & Reset Controls */}
+                  {(sampleFgPoint || sampleKeyColor) && (
+                    <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-4 flex-wrap">
+                        {sampleFgPoint && (
+                          <div className="flex items-center gap-2">
+                            <Target className="w-3.5 h-3.5 text-purple-400" />
+                            <span className="text-zinc-400">Target Subject:</span>
+                            {sampleFgColor && (
+                              <div
+                                className="w-4 h-4 rounded border border-zinc-700"
+                                style={{
+                                  backgroundColor: `rgb(${sampleFgColor[0]}, ${sampleFgColor[1]}, ${sampleFgColor[2]})`,
+                                }}
+                              />
+                            )}
+                            <span className="text-zinc-200 font-mono text-[11px]">
+                              ({Math.round(sampleFgPoint[0] * 100)}%, {Math.round(sampleFgPoint[1] * 100)}%)
+                            </span>
+                            <button
+                              onClick={() => {
+                                setSampleFgPoint(null);
+                                setSampleFgColor(null);
+                              }}
+                              className="text-zinc-500 hover:text-red-400 transition"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+
+                        {sampleKeyColor && (
+                          <div className="flex items-center gap-2">
+                            <Pipette className="w-3.5 h-3.5 text-zinc-300" />
+                            <span className="text-zinc-400">Sampled BG Key:</span>
+                            <div
+                              className="w-4 h-4 rounded border border-zinc-700"
+                              style={{
+                                backgroundColor: `rgb(${sampleKeyColor[0]}, ${sampleKeyColor[1]}, ${sampleKeyColor[2]})`,
+                              }}
+                            />
+                            <span className="text-zinc-200 font-mono text-[11px]">
+                              RGB({sampleKeyColor[0]}, {sampleKeyColor[1]}, {sampleKeyColor[2]})
+                            </span>
+                            <button
+                              onClick={() => {
+                                setSampleBgPoint(null);
+                                setSampleKeyColor(null);
+                              }}
+                              className="text-zinc-500 hover:text-red-400 transition"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <button
-                        onClick={() => setSampleKeyColor(null)}
-                        className="text-xs text-zinc-400 hover:text-white transition"
+                        onClick={() => {
+                          setSampleFgPoint(null);
+                          setSampleFgColor(null);
+                          setSampleBgPoint(null);
+                          setSampleKeyColor(null);
+                        }}
+                        className="text-xs text-zinc-400 hover:text-white underline transition"
                       >
-                        Reset to Auto
+                        Reset All Samples
                       </button>
                     </div>
                   )}
@@ -674,7 +934,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         <span className="text-zinc-500">Time:</span>
                         <span className="text-zinc-200 font-semibold">{result.durationMs}ms</span>
                         <span className="text-zinc-600">•</span>
-                        <span className="text-zinc-400 uppercase">{result.provider}</span>
+                        <span className="text-emerald-400 font-medium">{result.modelUsed}</span>
                       </div>
                     </div>
                   )}
@@ -683,7 +943,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                   {result && (
                     <div className="flex items-center justify-between gap-3 pt-2">
                       <button onClick={handleCopyBase64} className="btn-secondary">
-                        {copiedBase64 ? <Check className="w-3.5 h-3.5 text-zinc-200" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedBase64 ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{copiedBase64 ? 'Copied' : 'Base64'}</span>
                       </button>
 
@@ -726,12 +986,17 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
                   {/* Model Selector */}
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                      Neural Engine Model
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 flex items-center justify-between">
+                      <span>Neural Engine Model</span>
+                      {isSelectedModelCached && (
+                        <span className="text-[10px] text-emerald-400 font-normal flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Cached Locally
+                        </span>
+                      )}
                     </label>
                     <select
                       value={selectedModelId}
-                      onChange={(e) => setSelectedModelId(e.target.value)}
+                      onChange={(e) => handleSelectAndUseModel(e.target.value)}
                       className="w-full bg-[#0e0e11] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500"
                     >
                       <optgroup label="Built-in Neural Models">
@@ -803,7 +1068,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                             Studio Gradient
                           </button>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div className="grid grid-cols-3 gap-2 text-xs pt-1">
                           <button
                             type="button"
                             onClick={() => setBgMode('blur')}
@@ -826,14 +1091,25 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           >
                             Custom Image
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setBgMode('matte')}
+                            className={`py-2 px-2 rounded-xl text-xs transition ${
+                              bgMode === 'matte'
+                                ? 'bg-zinc-800 text-white font-semibold border border-zinc-700'
+                                : 'bg-zinc-900/60 border border-zinc-800/80 text-zinc-400 hover:text-white'
+                            }`}
+                          >
+                            Alpha Mask
+                          </button>
                         </div>
                       </div>
 
                       {/* Mode-Specific Customization Options */}
                       {bgMode === 'color' && (
-                        <div className="space-y-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                        <div className="space-y-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 animate-fadeIn">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-semibold text-zinc-300">Choose Solid Color</span>
+                            <span className="text-[11px] font-semibold text-zinc-300">Choose Solid Backdrop</span>
                             <div className="flex items-center gap-2">
                               <input
                                 type="color"
@@ -870,7 +1146,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       )}
 
                       {bgMode === 'gradient' && (
-                        <div className="space-y-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                        <div className="space-y-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 animate-fadeIn">
                           <span className="text-[11px] font-semibold text-zinc-300">Studio Ambient Lighting</span>
                           <div className="grid grid-cols-3 gap-2">
                             {GRADIENT_PRESETS.map((preset, idx) => (
@@ -912,27 +1188,27 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       )}
 
                       {bgMode === 'blur' && (
-                        <div className="space-y-2 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                        <div className="space-y-2 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 animate-fadeIn">
                           <div className="flex justify-between text-[11px]">
-                            <span className="text-zinc-300 font-semibold">Bokeh Blur Radius</span>
+                            <span className="text-zinc-300 font-semibold">Bokeh Blur Radius (DSLR Depth)</span>
                             <span className="text-zinc-200 font-mono">{bgBlurRadius} px</span>
                           </div>
                           <input
                             type="range"
                             min="5"
-                            max="45"
+                            max="60"
                             value={bgBlurRadius}
                             onChange={(e) => setBgBlurRadius(Number(e.target.value))}
                             className="w-full"
                           />
                           <p className="text-[10px] text-zinc-400">
-                            Softens the original background with realistic depth of field while keeping the foreground subject sharp.
+                            Smoothly softens the original background with realistic optical lens blur while maintaining crisp sub-pixel sharpness on the foreground subject.
                           </p>
                         </div>
                       )}
 
                       {bgMode === 'image' && (
-                        <div className="space-y-2 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                        <div className="space-y-2 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 animate-fadeIn">
                           <span className="text-[11px] font-semibold text-zinc-300">Replacement Background Image</span>
                           <input
                             ref={bgImageInputRef}
@@ -970,11 +1246,11 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       )}
 
                       {/* Drop Shadow Compositing */}
-                      {bgMode !== 'transparent' && (
+                      {bgMode !== 'transparent' && bgMode !== 'matte' && (
                         <div className="space-y-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-xs font-semibold text-white">Subject Drop Shadow</p>
+                              <p className="text-xs font-semibold text-white">Subject Contact Drop Shadow</p>
                               <p className="text-[10px] text-zinc-400">Adds realistic grounding against new backdrop</p>
                             </div>
                             <input
@@ -1021,12 +1297,12 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       <div className="space-y-3 pt-2">
                         <h5 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
                           <Wand2 className="w-3.5 h-3.5 text-zinc-400" />
-                          <span>Edge & Alpha Refinement</span>
+                          <span>Edge & Matting Tuning</span>
                         </h5>
 
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-xs">
-                            <span className="text-zinc-400">Sensitivity / Tolerance</span>
+                            <span className="text-zinc-400">Detection Sensitivity (Tolerance)</span>
                             <span className="text-zinc-200 font-mono">{bgThreshold}%</span>
                           </div>
                           <input
@@ -1067,7 +1343,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           <input
                             type="range"
                             min="0"
-                            max="12"
+                            max="15"
                             value={bgFeather}
                             onChange={(e) => setBgFeather(Number(e.target.value))}
                             className="w-full"
@@ -1076,8 +1352,21 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
                         <div className="flex items-center justify-between pt-1">
                           <div>
+                            <p className="text-xs font-medium text-white">Color Defringing (Decontaminate)</p>
+                            <p className="text-[10px] text-zinc-400">Removes background color spill on hair edges</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={defringe}
+                            onChange={(e) => setDefringe(e.target.checked)}
+                            className="w-4 h-4 rounded cursor-pointer accent-zinc-200"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <div>
                             <p className="text-xs font-medium text-white">Invert Mask</p>
-                            <p className="text-[10px] text-zinc-400">Keep background and erase subject</p>
+                            <p className="text-[10px] text-zinc-400">Swap subject and background</p>
                           </div>
                           <input
                             type="checkbox"
@@ -1089,7 +1378,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       </div>
 
                       {/* Export Format Selector */}
-                      {bgMode !== 'transparent' && (
+                      {bgMode !== 'transparent' && bgMode !== 'matte' && (
                         <div className="space-y-2 pt-2 border-t border-[#222227]">
                           <div className="flex justify-between items-center text-xs">
                             <span className="text-zinc-400">Output Format</span>
@@ -1173,7 +1462,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         <div>
                           <p className="text-xs font-medium text-white">Bilateral Denoising</p>
                           <p className="text-[10px] text-zinc-400">
-                            Smooth compression artifacts while preserving edges
+                            Smooth compression artifacts while preserving high-frequency edges
                           </p>
                         </div>
                         <input
@@ -1206,7 +1495,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs">
-                          <span className="text-zinc-400">HDR Shadow Recovery</span>
+                          <span className="text-zinc-400">HDR Dynamic Range Boost</span>
                           <span className="text-zinc-200 font-mono">{hdrBoost}%</span>
                         </div>
                         <input
@@ -1221,7 +1510,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs">
-                          <span className="text-zinc-400">Color Vibrance</span>
+                          <span className="text-zinc-400">Color Vibrance Restoration</span>
                           <span className="text-zinc-200 font-mono">{vibrance}%</span>
                         </div>
                         <input
@@ -1291,17 +1580,27 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
             {REGISTERED_AI_MODELS.map((model) => {
               const isCached = cachedModels.some((m) => m.modelId === model.id);
               const isDownloading = downloadingModelId === model.id;
+              const isCurrentlyActive = selectedModelId === model.id;
 
               return (
                 <div
                   key={model.id}
-                  className="glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4"
+                  className={`glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4 transition ${
+                    isCurrentlyActive ? 'ring-2 ring-white/[0.2] bg-[#141418]' : ''
+                  }`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-zinc-850 text-zinc-300 border border-zinc-700/80 uppercase">
-                        {model.task}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-zinc-850 text-zinc-300 border border-zinc-700/80 uppercase">
+                          {model.task}
+                        </span>
+                        {isCurrentlyActive && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 border border-purple-800/50">
+                            ACTIVE IN STUDIO
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs font-mono text-zinc-500">
                         {(model.sizeBytes / (1024 * 1024)).toFixed(1)} MB • {model.precision.toUpperCase()}
                       </span>
@@ -1320,7 +1619,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         <span>Ready in Local Storage</span>
                       </div>
                     ) : (
-                      <div className="text-xs text-zinc-500">Not Downloaded</div>
+                      <div className="text-xs text-zinc-500">Available to Cache</div>
                     )}
 
                     <div className="flex items-center gap-2">
@@ -1328,10 +1627,10 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                         <>
                           <button
                             onClick={() => handleSelectAndUseModel(model.id)}
-                            className="btn-primary"
+                            className={`btn-primary ${isCurrentlyActive ? 'ring-2 ring-white' : ''}`}
                           >
                             <Sparkles className="w-3.5 h-3.5 text-zinc-950" />
-                            <span>Use in Studio</span>
+                            <span>{isCurrentlyActive ? 'Active in Studio' : 'Use in Studio'}</span>
                           </button>
                           <button
                             onClick={() => handleDeleteModel(model.id)}
@@ -1351,12 +1650,12 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           {isDownloading ? (
                             <>
                               <RefreshCw className="w-3.5 h-3.5 animate-spin text-zinc-950" />
-                              <span>Installing...</span>
+                              <span>Caching Model...</span>
                             </>
                           ) : (
                             <>
                               <Download className="w-3.5 h-3.5 text-zinc-950" />
-                              <span>Download Model</span>
+                              <span>Download & Cache</span>
                             </>
                           )}
                         </button>
@@ -1370,54 +1669,67 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
             {/* Custom Imported Models */}
             {cachedModels
               .filter((m) => m.isCustom)
-              .map((customModel) => (
-                <div
-                  key={customModel.modelId}
-                  className="glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4 border-l-2 border-zinc-400"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-zinc-850 text-zinc-300 border border-zinc-700/80 uppercase">
-                        Custom ONNX
-                      </span>
-                      <span className="text-xs font-mono text-zinc-500">
-                        {(customModel.sizeBytes / (1024 * 1024)).toFixed(1)} MB
-                      </span>
+              .map((customModel) => {
+                const isCurrentlyActive = selectedModelId === customModel.modelId;
+
+                return (
+                  <div
+                    key={customModel.modelId}
+                    className={`glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4 border-l-2 border-zinc-400 ${
+                      isCurrentlyActive ? 'ring-2 ring-white/[0.2] bg-[#141418]' : ''
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-zinc-850 text-zinc-300 border border-zinc-700/80 uppercase">
+                            {customModel.task || 'custom'}
+                          </span>
+                          {isCurrentlyActive && (
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 border border-purple-800/50">
+                              ACTIVE
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs font-mono text-zinc-500">
+                          {(customModel.sizeBytes / (1024 * 1024)).toFixed(1)} MB
+                        </span>
+                      </div>
+
+                      <div>
+                        <h5 className="text-sm font-semibold text-white">{customModel.name}</h5>
+                        <p className="text-xs text-zinc-400 mt-1">
+                          Locally imported ONNX neural model file.
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <h5 className="text-sm font-semibold text-white">{customModel.name}</h5>
-                      <p className="text-xs text-zinc-400 mt-1">
-                        Locally imported user ONNX neural network file.
-                      </p>
+                    <div className="pt-3 border-t border-[#222227] flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-zinc-300 text-xs font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span>Ready in Local Storage</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleSelectAndUseModel(customModel.modelId)}
+                          className="btn-primary"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-zinc-950" />
+                          <span>Use in Studio</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteModel(customModel.modelId)}
+                          className="btn-secondary hover:text-red-400 hover:border-red-800/40"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Purge</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="pt-3 border-t border-[#222227] flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-zinc-300 text-xs font-medium">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>Ready in Local Storage</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleSelectAndUseModel(customModel.modelId)}
-                        className="btn-primary"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-zinc-950" />
-                        <span>Use in Studio</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteModel(customModel.modelId)}
-                        className="btn-secondary hover:text-red-400 hover:border-red-800/40"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Purge</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </div>
       )}
