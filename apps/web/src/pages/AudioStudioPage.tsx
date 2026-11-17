@@ -40,6 +40,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
   const [isMuted, setIsMuted] = useState(false);
   const [outputResult, setOutputResult] = useState<AudioProcessResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Audio options
   const [outputFormat, setOutputFormat] = useState('mp3');
@@ -76,6 +77,10 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
   const handleFileSelected = async (selectedFile: File) => {
     setFile(selectedFile);
     setOutputResult(null);
+    setTrimStart(0);
+    setCurrentTime(0);
+    setIsPlaying(false);
+    setErrorMessage(null);
 
     const inspected = await FileInspector.inspect(selectedFile);
     setInspection(inspected);
@@ -97,7 +102,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
         audioRef.current.volume = isMuted ? 0 : volume;
       }
     } catch (err: any) {
-      alert(`Audio decoding error: ${err.message}`);
+      setErrorMessage(`Audio decoding error: ${err.message}`);
     }
   };
 
@@ -197,7 +202,7 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
         completedAt: Date.now(),
       });
     } catch (err: any) {
-      alert(`Audio processing failed: ${err.message}`);
+      setErrorMessage(`Audio processing failed: ${err.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -211,6 +216,18 @@ export const AudioStudioPage: React.FC<AudioStudioPageProps> = ({ initialFile, o
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-750 flex items-center justify-between text-xs text-zinc-200 animate-fadeIn">
+          <span>{errorMessage}</span>
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="text-zinc-400 hover:text-white px-2 py-1 rounded transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}

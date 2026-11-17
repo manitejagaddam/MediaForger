@@ -19,6 +19,8 @@ import {
   Image as ImageIcon,
   Sun,
   Layers,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import {
   AIEngine,
@@ -98,6 +100,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const [clarity, setClarity] = useState<number>(50);
   const [vibrance, setVibrance] = useState<number>(40);
   const [hdrBoost, setHdrBoost] = useState<number>(30);
+  const [error, setError] = useState<string | null>(null);
 
   // Download / import refs
   const [downloadingModelId, setDownloadingModelId] = useState<string | null>(null);
@@ -187,11 +190,12 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
 
   const handleDownloadModel = async (model: AIModelMeta) => {
     setDownloadingModelId(model.id);
+    setError(null);
     try {
       await AIEngine.installModel(model);
       await loadCachedModels();
     } catch (err: any) {
-      alert(`Model download error: ${err.message}`);
+      setError(`Model download error: ${err.message}`);
     } finally {
       setDownloadingModelId(null);
     }
@@ -200,13 +204,14 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
   const handleImportCustomModel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const customFile = e.target.files[0];
+      setError(null);
       try {
         const entry = await AIEngine.importCustomModel(customFile);
         await loadCachedModels();
         setSelectedModelId(entry.modelId);
         setActiveTab('workspace');
       } catch (err: any) {
-        alert(err.message);
+        setError(err.message);
       }
     }
   };
@@ -344,7 +349,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
         completedAt: Date.now(),
       });
     } catch (err: any) {
-      alert(`AI Execution error: ${err.message}`);
+      setError(`AI Execution error: ${err.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -430,6 +435,21 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
           </label>
         </div>
       </div>
+
+      {error && (
+        <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="p-1 rounded hover:bg-red-900/40 text-red-400 hover:text-white transition"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {activeTab === 'workspace' ? (
         /* Workspace Tab */

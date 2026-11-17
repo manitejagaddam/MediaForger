@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import { getStorageQuota } from '@mediaforge/storage';
 import { WasmRuntimeManager } from '@mediaforge/wasm-runtime';
@@ -29,6 +31,7 @@ export const SettingsPage: React.FC = () => {
   const [concurrency, setConcurrency] = useState(4);
   const [retentionDays, setRetentionDays] = useState(7);
   const [clearing, setClearing] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     loadStorageInfo();
@@ -42,11 +45,12 @@ export const SettingsPage: React.FC = () => {
   const handleRequestPersistence = async () => {
     if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
       const persisted = await navigator.storage.persist();
-      alert(
-        persisted
+      setNotification({
+        type: persisted ? 'success' : 'error',
+        message: persisted
           ? 'Persistent storage granted! Browser will not evict your cached models.'
-          : 'Storage persistence was denied by the browser.'
-      );
+          : 'Storage persistence was denied by the browser.',
+      });
       await loadStorageInfo();
     }
   };
@@ -56,7 +60,10 @@ export const SettingsPage: React.FC = () => {
     await WasmRuntimeManager.clearCache();
     await loadStorageInfo();
     setClearing(false);
-    alert('WASM cache cleared successfully.');
+    setNotification({
+      type: 'success',
+      message: 'WASM cache cleared successfully.',
+    });
   };
 
   const handlePurgeOldData = async () => {
@@ -64,11 +71,38 @@ export const SettingsPage: React.FC = () => {
     const result = await db.cleanupOldData(retentionDays);
     await loadStorageInfo();
     setClearing(false);
-    alert(`Cleaned up ${result.deletedJobs} old jobs and ${result.deletedOutputs} temporary outputs.`);
+    setNotification({
+      type: 'success',
+      message: `Cleaned up ${result.deletedJobs} old jobs and ${result.deletedOutputs} temporary outputs.`,
+    });
   };
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      {notification && (
+        <div
+          className={`p-4 rounded-xl text-xs flex items-center justify-between border ${
+            notification.type === 'success'
+              ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-200'
+              : 'bg-red-950/40 border-red-800/60 text-red-200'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            {notification.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            )}
+            <span>{notification.message}</span>
+          </div>
+          <button
+            onClick={() => setNotification(null)}
+            className="p-1 rounded hover:bg-white/10 text-zinc-400 hover:text-white transition"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       {/* Storage & Persistence */}
       <div className="glass-panel rounded-2xl p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">

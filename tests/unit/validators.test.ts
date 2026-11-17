@@ -59,6 +59,26 @@ describe('Validators & Security', () => {
       const zipHeader = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
       expect(verifyMagicBytes(zipHeader, 'zip')).toBe(true);
     });
+
+    it('validates MP3 ID3 and raw MPEG audio frame sync signatures', () => {
+      const id3Header = new Uint8Array([0x49, 0x44, 0x33, 0x04, 0x00]);
+      const mpegSyncHeader = new Uint8Array([0xff, 0xfb, 0x90, 0x64]);
+      expect(verifyMagicBytes(id3Header, 'mp3')).toBe(true);
+      expect(verifyMagicBytes(mpegSyncHeader, 'mp3')).toBe(true);
+    });
+
+    it('validates WebM and MKV EBML signatures', () => {
+      const ebmlHeader = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3]);
+      expect(verifyMagicBytes(ebmlHeader, 'webm')).toBe(true);
+      expect(verifyMagicBytes(ebmlHeader, 'mkv')).toBe(true);
+    });
+
+    it('validates TIFF endian signatures', () => {
+      const leHeader = new Uint8Array([0x49, 0x49, 0x2a, 0x00]);
+      const beHeader = new Uint8Array([0x4d, 0x4d, 0x00, 0x2a]);
+      expect(verifyMagicBytes(leHeader, 'tiff')).toBe(true);
+      expect(verifyMagicBytes(beHeader, 'tiff')).toBe(true);
+    });
   });
 });
 

@@ -31,5 +31,28 @@ describe('DocumentEngine', () => {
     expect(json[0].name).toBe('Delta');
     expect(json[0].score).toBe('98.5');
   });
+
+  it('correctly handles quoted fields containing commas and escaped quotes', () => {
+    const csv = `id,name,address\n1,"Doe, John","123 Main St, Apt 4B"\n2,"Smith, ""Agent"" Bob","Area 51"`;
+    const json = DocumentEngine.csvToJson(csv);
+
+    expect(json).toHaveLength(2);
+    expect(json[0].name).toBe('Doe, John');
+    expect(json[0].address).toBe('123 Main St, Apt 4B');
+    expect(json[1].name).toBe('Smith, "Agent" Bob');
+  });
+
+  it('handles single JSON objects and envelope objects', () => {
+    const singleObj = { id: 42, title: 'Autonomous Agent' };
+    const csv1 = DocumentEngine.jsonToCsv(singleObj);
+    expect(csv1).toContain('"id","title"');
+    expect(csv1).toContain('"42","Autonomous Agent"');
+
+    const envelope = { users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] };
+    const csv2 = DocumentEngine.jsonToCsv(envelope);
+    expect(csv2).toContain('"id","name"');
+    expect(csv2).toContain('"1","Alice"');
+    expect(csv2).toContain('"2","Bob"');
+  });
 });
 

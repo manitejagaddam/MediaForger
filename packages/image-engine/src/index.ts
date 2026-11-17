@@ -18,14 +18,17 @@ export class ImageEngine {
     options: ImageProcessingOptions
   ): Promise<ImageProcessResult> {
     let bitmap: ImageBitmap;
+    let needsClose = false;
     if (input instanceof ImageBitmap) {
       bitmap = input;
     } else {
       bitmap = await createImageBitmap(input);
+      needsClose = true;
     }
 
-    const srcWidth = bitmap.width;
-    const srcHeight = bitmap.height;
+    try {
+      const srcWidth = bitmap.width;
+      const srcHeight = bitmap.height;
 
     // 1. Calculate target dimensions
     let targetWidth = srcWidth;
@@ -135,6 +138,12 @@ export class ImageEngine {
     );
     ctx.restore();
 
+    // Release GPU memory for source bitmap as soon as rendered
+    if (needsClose) {
+      bitmap.close();
+      needsClose = false;
+    }
+
     // Filters: Grayscale, brightness, contrast
     if (options.grayscale || options.brightness || options.contrast) {
       const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
@@ -231,7 +240,11 @@ export class ImageEngine {
     }
 
     let outputBlob: Blob;
-    if (canvas instanceof OffscreenCanvas) {
+    if (format === 'bmp') {
+      // Use genuine pure-TypeScript BMP encoder for guaranteed cross-browser compatibility
+      const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      outputBlob = this.encodeBmp(imgData);
+    } else if (canvas instanceof OffscreenCanvas) {
       outputBlob = await canvas.convertToBlob({ type: mimeType, quality });
     } else {
       outputBlob = await new Promise<Blob>((resolve, reject) => {
@@ -261,21 +274,113 @@ export class ImageEngine {
       sizeBytes: outputBlob.size,
       format,
     };
+    } finally {
+      if (needsClose) {
+        try {
+          bitmap.close();
+        } catch {
+          // Ignore if already closed
+        }
+      }
+    }
   }
 
   /**
-   * Encodes a Blob to Base64 string
+   * Encodes raw ImageData pixels into a genuine 24-bit uncompressed Windows BMP Blob
+   */
+  static encodeBmp(imageData: ImageData): Blob {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+
+    // Row size is padded to a multiple of 4 bytes
+    const rowBytes = Math.floor((width * 3 + 3) / 4) * 4;
+    const pixelArraySize = rowBytes * height;
+    const fileHeaderSize = 14;
+    const dibHeaderSize = 40;
+    const totalFileSize = fileHeaderSize + dibHeaderSize + pixelArraySize;
+
+    const buffer = new ArrayBuffer(totalFileSize);
+    const view = new DataView(buffer);
+
+    // 1. BMP File Header (14 bytes)
+    view.setUint8(0, 0x42); // 'B'
+    view.setUint8(1, 0x4d); // 'M'
+    view.setUint32(2, totalFileSize, true);
+    view.setUint16(6, 0, true); // Reserved
+    view.setUint16(8, 0, true); // Reserved
+    view.setUint32(10, fileHeaderSize + dibHeaderSize, true); // Pixel offset (54)
+
+    // 2. DIB Header (BITMAPINFOHEADER - 40 bytes)
+    view.setUint32(14, dibHeaderSize, true);
+    view.setInt32(18, width, true);
+    view.setInt32(22, height, true); // Positive height = bottom-up
+    view.setUint16(26, 1, true); // Color planes
+    view.setUint16(28, 24, true); // 24-bit BGR
+    view.setUint32(30, 0, true); // BI_RGB (no compression)
+    view.setUint32(34, pixelArraySize, true);
+    view.setUint32(38, 2835, true); // ~72 DPI horizontal
+    view.setUint32(42, 2835, true); // ~72 DPI vertical
+    view.setUint32(46, 0, true); // Colors in color table
+    view.setUint32(50, 0, true); // Important color count
+
+    // 3. Pixel Data (Bottom-Up row order, BGR order)
+    const bytes = new Uint8Array(buffer);
+    let pixelOffset = 54;
+
+    for (let y = height - 1; y >= 0; y--) {
+      const srcRowOffset = y * width * 4;
+      let dstRowOffset = pixelOffset;
+
+      for (let x = 0; x < width; x++) {
+        const srcIdx = srcRowOffset + x * 4;
+        bytes[dstRowOffset++] = data[srcIdx + 2]; // Blue
+        bytes[dstRowOffset++] = data[srcIdx + 1]; // Green
+        bytes[dstRowOffset++] = data[srcIdx];     // Red
+      }
+
+      // Pad remaining bytes in row to 4-byte boundary
+      const padding = rowBytes - width * 3;
+      for (let p = 0; p < padding; p++) {
+        bytes[dstRowOffset++] = 0;
+      }
+
+      pixelOffset += rowBytes;
+    }
+
+    return new Blob([buffer], { type: 'image/bmp' });
+  }
+
+  /**
+   * Encodes a Blob to Base64 string (compatible with Web Workers, Service Workers, and DOM)
    */
   static async blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') resolve(reader.result);
-        else reject(new Error('Failed to read as Data URL'));
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    if (typeof FileReader !== 'undefined') {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Failed to read as Data URL'));
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // Universal fallback via ArrayBuffer for Workers and environments without FileReader
+    const buffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk as any);
+    }
+    const b64 =
+      typeof btoa !== 'undefined'
+        ? btoa(binary)
+        : (globalThis as any).Buffer?.from(binary, 'binary').toString('base64') || '';
+    return `data:${blob.type || 'application/octet-stream'};base64,${b64}`;
   }
 
   /**

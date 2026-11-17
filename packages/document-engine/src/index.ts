@@ -2,18 +2,53 @@ import { DocumentProcessingOptions } from '@mediaforge/shared-types';
 
 export class DocumentEngine {
   /**
+   * Tokenizes a CSV line respecting quoted strings and escaped quotes ("")
+   */
+  private static parseCsvLine(line: string, delimiter = ','): string[] {
+    const fields: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          // Escaped quote: "" -> "
+          current += '"';
+          i++;
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === delimiter && !inQuotes) {
+        fields.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    fields.push(current.trim());
+    return fields;
+  }
+
+  /**
    * Converts CSV string to JSON structure
    */
   static csvToJson(csvText: string, delimiter = ','): Record<string, string>[] {
-    const lines = csvText.trim().split(/\r?\n/);
+    const trimmed = csvText.trim();
+    if (!trimmed) return [];
+
+    const lines = trimmed.split(/\r?\n/);
     if (lines.length < 1) return [];
 
-    const headers = lines[0].split(delimiter).map((h) => h.trim().replace(/^["']|["']$/g, ''));
+    const headers = this.parseCsvLine(lines[0], delimiter);
     const result: Record<string, string>[] = [];
 
     for (let i = 1; i < lines.length; i++) {
       if (!lines[i].trim()) continue;
-      const values = lines[i].split(delimiter).map((v) => v.trim().replace(/^["']|["']$/g, ''));
+      const values = this.parseCsvLine(lines[i], delimiter);
       const row: Record<string, string> = {};
       for (let j = 0; j < headers.length; j++) {
         row[headers[j]] = values[j] !== undefined ? values[j] : '';
@@ -25,12 +60,41 @@ export class DocumentEngine {
   }
 
   /**
-   * Converts JSON array to CSV string
+   * Converts JSON array or object to CSV string
    */
-  static jsonToCsv(jsonArray: Record<string, unknown>[], delimiter = ','): string {
-    if (!Array.isArray(jsonArray) || jsonArray.length === 0) return '';
+  static jsonToCsv(jsonInput: unknown, delimiter = ','): string {
+    let jsonArray: Record<string, unknown>[] = [];
 
-    const headers = Object.keys(jsonArray[0]);
+    if (Array.isArray(jsonInput)) {
+      jsonArray = jsonInput.filter((item) => typeof item === 'object' && item !== null) as Record<string, unknown>[];
+    } else if (typeof jsonInput === 'object' && jsonInput !== null) {
+      // Check if it has a property containing an array of records (e.g. { data: [...] } or { users: [...] })
+      const record = jsonInput as Record<string, unknown>;
+      let foundArray = false;
+      for (const key of Object.keys(record)) {
+        const val = record[key];
+        if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'object') {
+          jsonArray = val.filter((it) => typeof it === 'object' && it !== null);
+          foundArray = true;
+          break;
+        }
+      }
+      if (!foundArray) {
+        // Single object -> wrap in array
+        jsonArray = [record];
+      }
+    }
+
+    if (jsonArray.length === 0) return '';
+
+    // Collect all unique headers across all records
+    const headerSet = new Set<string>();
+    for (const item of jsonArray) {
+      for (const key of Object.keys(item)) {
+        headerSet.add(key);
+      }
+    }
+    const headers = Array.from(headerSet);
     const lines: string[] = [];
 
     // Header row
@@ -62,7 +126,7 @@ export class DocumentEngine {
       const jsonString = options.prettyPrintJson ? JSON.stringify(json, null, 2) : JSON.stringify(json);
       return new Blob([jsonString], { type: 'application/json' });
     } else if (targetFormat === 'csv') {
-      let parsedJson: Record<string, unknown>[];
+      let parsedJson: unknown;
       try {
         parsedJson = JSON.parse(text);
       } catch {

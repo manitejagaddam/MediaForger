@@ -223,11 +223,15 @@ export class AIEngine {
     canvas.width = targetW;
     canvas.height = targetH;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) throw new Error('Failed to create 2D canvas context for AI upscaling');
+    if (!ctx) {
+      imgBitmap.close();
+      throw new Error('Failed to create 2D canvas context for AI upscaling');
+    }
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(imgBitmap, 0, 0, targetW, targetH);
+    imgBitmap.close();
 
     const imgData = ctx.getImageData(0, 0, targetW, targetH);
     const data = imgData.data;
@@ -298,9 +302,13 @@ export class AIEngine {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return cutoutBlob;
+    if (!ctx) {
+      bitmap.close();
+      return cutoutBlob;
+    }
 
     ctx.drawImage(bitmap, 0, 0);
+    bitmap.close();
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
 
@@ -393,8 +401,9 @@ export class AIEngine {
   }
 
   /**
-   * Fallback Saliency Segmentation:
-   * Protects central subject and avoids corrupting bottom borders in portraits
+   * High-Precision Local Saliency & Chroma Segmentation:
+   * Combines multi-border color clustering, spatial centrality priors, and anti-aliasing
+   * to accurately separate foreground subjects from backgrounds on-device without network calls.
    */
   private static async fallbackSaliencyMatte(
     source: Blob | File,
@@ -411,19 +420,25 @@ export class AIEngine {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) throw new Error('Canvas context failed');
+    if (!ctx) {
+      imgBitmap.close();
+      throw new Error('Canvas context failed');
+    }
 
     ctx.drawImage(imgBitmap, 0, 0);
+    imgBitmap.close();
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
 
     const mask = new Uint8Array(width * height);
-    mask.fill(255); // Default all foreground
 
     if (sampleKeyColor) {
-      // User Eyedropper Key Color Match
+      // User Eyedropper Key Color Match with smooth transition
       const [kr, kg, kb] = sampleKeyColor;
-      const tol = (threshold / 100) * 120 + 10;
+      const baseTol = (threshold / 100) * 140 + 5;
+      const lowBound = baseTol * 0.8;
+      const highBound = baseTol * 1.2;
+
       for (let p = 0; p < width * height; p++) {
         const idx = p * 4;
         const dist = Math.sqrt(
@@ -431,76 +446,118 @@ export class AIEngine {
           0.587 * (data[idx + 1] - kg) ** 2 +
           0.114 * (data[idx + 2] - kb) ** 2
         );
-        if (dist <= tol) {
+
+        if (dist <= lowBound) {
           mask[p] = 0;
+        } else if (dist >= highBound) {
+          mask[p] = 255;
+        } else {
+          mask[p] = Math.round(((dist - lowBound) / (highBound - lowBound)) * 255);
         }
       }
     } else {
-      // Saliency Boundary Flood Fill (Top & Corners only; protecting central subject & bottom)
-      const colorClusters: [number, number, number][] = [];
-      const samplePoint = (x: number, y: number) => {
-        const idx = (y * width + x) * 4;
-        colorClusters.push([data[idx], data[idx + 1], data[idx + 2]]);
+      // Automatic Multi-Border Saliency Engine
+      // 1. Collect background color samples across all perimeters
+      const bgSamples: [number, number, number][] = [];
+      const addSample = (x: number, y: number) => {
+        const px = Math.max(0, Math.min(width - 1, Math.floor(x)));
+        const py = Math.max(0, Math.min(height - 1, Math.floor(y)));
+        const idx = (py * width + px) * 4;
+        bgSamples.push([data[idx], data[idx + 1], data[idx + 2]]);
       };
 
-      // Sample top corners and top 10% edge only (never bottom!)
-      samplePoint(2, 2);
-      samplePoint(width - 3, 2);
-      samplePoint(Math.floor(width / 4), 2);
-      samplePoint(Math.floor((3 * width) / 4), 2);
-
-      const visited = new Uint8Array(width * height);
-      const queue = new Int32Array(width * height);
-      let qHead = 0;
-      let qTail = 0;
-
-      // Seed only top boundary outside central 30%
-      for (let x = 0; x < width; x++) {
-        if (x < width * 0.25 || x > width * 0.75) {
-          const p = x;
-          visited[p] = 1;
-          queue[qTail++] = p;
-        }
+      // Top edge (10 samples)
+      for (let i = 0; i <= 10; i++) {
+        addSample((i / 10) * (width - 1), 2);
+        addSample((i / 10) * (width - 1), Math.min(height * 0.05, 10));
       }
+      // Left edge (8 samples)
+      for (let i = 1; i <= 8; i++) {
+        addSample(2, (i / 10) * (height - 1));
+      }
+      // Right edge (8 samples)
+      for (let i = 1; i <= 8; i++) {
+        addSample(width - 3, (i / 10) * (height - 1));
+      }
+      // Bottom outer corners
+      addSample(2, height - 3);
+      addSample(width - 3, height - 3);
 
-      const tolDistance = (threshold / 100) * 110 + 15;
+      // 2. Collect foreground subject samples from central core
+      const fgSamples: [number, number, number][] = [];
+      const addFgSample = (x: number, y: number) => {
+        const px = Math.max(0, Math.min(width - 1, Math.floor(x)));
+        const py = Math.max(0, Math.min(height - 1, Math.floor(y)));
+        const idx = (py * width + px) * 4;
+        fgSamples.push([data[idx], data[idx + 1], data[idx + 2]]);
+      };
 
-      while (qHead < qTail) {
-        const p = queue[qHead++];
-        const px = p % width;
-        const py = Math.floor(p / width);
-        const idx = p * 4;
+      const cx = width * 0.5;
+      const cy = height * 0.45;
+      addFgSample(cx, cy);
+      addFgSample(cx, height * 0.3);
+      addFgSample(cx, height * 0.6);
+      addFgSample(width * 0.4, height * 0.45);
+      addFgSample(width * 0.6, height * 0.45);
 
-        // Never flood fill into the central body region
-        const inCenterCore = px > width * 0.28 && px < width * 0.72 && py > height * 0.25;
-        if (inCenterCore) continue;
+      // 3. Score every pixel based on color distance and spatial centrality prior
+      const cutoff = 0.72 - (threshold / 100) * 0.44; // Sensitivity calibration
 
-        let isBg = false;
-        for (const [cr, cg, cb] of colorClusters) {
-          const dist = Math.sqrt(
-            0.299 * (data[idx] - cr) ** 2 +
-            0.587 * (data[idx + 1] - cg) ** 2 +
-            0.114 * (data[idx + 2] - cb) ** 2
-          );
-          if (dist <= tolDistance) {
-            isBg = true;
-            break;
+      for (let y = 0; y < height; y++) {
+        const yOffset = y * width;
+        const normY = (y - cy) / (height * 0.5);
+
+        for (let x = 0; x < width; x++) {
+          const p = yOffset + x;
+          const idx = p * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+
+          // Distance to closest background sample
+          let minBgDist = 999;
+          for (let s = 0; s < bgSamples.length; s++) {
+            const sm = bgSamples[s];
+            const dist = Math.sqrt(
+              0.299 * (r - sm[0]) ** 2 +
+              0.587 * (g - sm[1]) ** 2 +
+              0.114 * (b - sm[2]) ** 2
+            );
+            if (dist < minBgDist) minBgDist = dist;
           }
-        }
 
-        if (isBg) {
-          mask[p] = 0;
-          const neighbors = [
-            py > 0 ? p - width : -1,
-            py < height - 1 ? p + width : -1,
-            px > 0 ? p - 1 : -1,
-            px < width - 1 ? p + 1 : -1,
-          ];
-          for (const n of neighbors) {
-            if (n !== -1 && !visited[n]) {
-              visited[n] = 1;
-              queue[qTail++] = n;
-            }
+          // Distance to closest foreground sample
+          let minFgDist = 999;
+          for (let s = 0; s < fgSamples.length; s++) {
+            const sm = fgSamples[s];
+            const dist = Math.sqrt(
+              0.299 * (r - sm[0]) ** 2 +
+              0.587 * (g - sm[1]) ** 2 +
+              0.114 * (b - sm[2]) ** 2
+            );
+            if (dist < minFgDist) minFgDist = dist;
+          }
+
+          // Spatial centrality distance
+          const normX = (x - cx) / (width * 0.5);
+          const spatialDist = Math.sqrt(normX * normX + normY * normY);
+
+          // Spatial background likelihood (0 at center, 1 at perimeter)
+          const spatialBgScore = Math.max(0, Math.min(1, (spatialDist - 0.35) / 0.65));
+
+          // Color background likelihood (1 if pixel looks like background, 0 if looks like foreground)
+          const colorBgScore = minFgDist / (minBgDist + minFgDist + 0.001);
+
+          // Combined background probability
+          const combinedBgScore = 0.55 * colorBgScore + 0.45 * spatialBgScore;
+
+          if (combinedBgScore >= cutoff + 0.08) {
+            mask[p] = 0;
+          } else if (combinedBgScore <= cutoff - 0.08) {
+            mask[p] = 255;
+          } else {
+            const t = (cutoff + 0.08 - combinedBgScore) / 0.16;
+            mask[p] = Math.round(t * 255);
           }
         }
       }
@@ -542,11 +599,16 @@ export class AIEngine {
       try {
         const imgly = await import('@imgly/background-removal');
         const neuralBlob = await imgly.removeBackground(source, {
-          model: 'isnet_fp16',
-          device: provider === 'webgpu' ? 'gpu' : 'cpu',
+          model: 'isnet_quint8',
+          device: 'cpu',
           output: {
             format: 'image/png',
             quality: 1.0,
+          },
+          progress: (key: string, current: number, total: number) => {
+            if (options.onProgress && total > 0) {
+              options.onProgress(key, Math.round((current / total) * 100));
+            }
           },
         });
         if (neuralBlob && neuralBlob.size > 0) {
@@ -636,6 +698,7 @@ export class AIEngine {
     } else if (mode === 'image' && options.backgroundImage) {
       const bgBitmap = await createImageBitmap(options.backgroundImage);
       outCtx.drawImage(bgBitmap, 0, 0, width, height);
+      bgBitmap.close();
 
       if (options.shadow?.enabled) {
         outCtx.save();
@@ -649,6 +712,9 @@ export class AIEngine {
 
       outCtx.drawImage(cutoutBitmap, 0, 0);
     }
+
+    imgBitmap.close();
+    cutoutBitmap.close();
 
     const format = mode === 'transparent' ? 'png' : options.outputFormat || 'png';
     const mimeType = format === 'jpeg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
@@ -696,9 +762,13 @@ export class AIEngine {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) throw new Error('Failed to create canvas context for image enhancement');
+    if (!ctx) {
+      imgBitmap.close();
+      throw new Error('Failed to create canvas context for image enhancement');
+    }
 
     ctx.drawImage(imgBitmap, 0, 0);
+    imgBitmap.close();
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
 

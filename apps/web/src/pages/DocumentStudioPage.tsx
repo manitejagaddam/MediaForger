@@ -30,6 +30,7 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
   const [prettyJson, setPrettyJson] = useState(true);
   const [copied, setCopied] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -92,7 +93,7 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
         completedAt: Date.now(),
       });
     } catch (err: any) {
-      alert(`Document conversion failed: ${err.message}`);
+      setErrorMessage(`Document conversion failed: ${err.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -113,6 +114,18 @@ export const DocumentStudioPage: React.FC<DocumentStudioPageProps> = ({ initialF
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-750 flex items-center justify-between text-xs text-zinc-200 animate-fadeIn">
+          <span>{errorMessage}</span>
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="text-zinc-400 hover:text-white px-2 py-1 rounded transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {!file ? (
         <div
           onClick={() => fileInputRef.current?.click()}

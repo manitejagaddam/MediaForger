@@ -9,6 +9,8 @@ import {
   FolderArchive,
   CheckCircle2,
   RefreshCw,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import { ArchiveEngine, ArchiveFileEntry } from '@mediaforge/archive-engine';
 import { ExportManager } from '@mediaforge/core';
@@ -33,6 +35,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
   const [zipToExtract, setZipToExtract] = useState<File | null>(null);
   const [extractedEntries, setExtractedEntries] = useState<ArchiveFileEntry[]>([]);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fileInputCreateRef = useRef<HTMLInputElement>(null);
   const fileInputExtractRef = useRef<HTMLInputElement>(null);
@@ -65,6 +68,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
   const handleCreateZip = async () => {
     if (filesToZip.length === 0) return;
     setIsZipping(true);
+    setError(null);
 
     try {
       const entries: ArchiveFileEntry[] = [];
@@ -93,7 +97,7 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
         completedAt: Date.now(),
       });
     } catch (err: any) {
-      alert(`ZIP creation failed: ${err.message}`);
+      setError(`ZIP creation failed: ${err.message}`);
     } finally {
       setIsZipping(false);
     }
@@ -103,12 +107,13 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
     setZipToExtract(file);
     setIsExtracting(true);
     setExtractedEntries([]);
+    setError(null);
 
     try {
       const entries = await ArchiveEngine.extractZip(file);
       setExtractedEntries(entries);
     } catch (err: any) {
-      alert(`Archive extraction failed: ${err.message}`);
+      setError(`Archive extraction failed: ${err.message}`);
     } finally {
       setIsExtracting(false);
     }
@@ -116,6 +121,20 @@ export const ArchiveStudioPage: React.FC<ArchiveStudioPageProps> = ({ initialFil
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      {error && (
+        <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="p-1 rounded hover:bg-red-900/40 text-red-400 hover:text-white transition"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       {/* Tab Switcher */}
       <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-4">
         <button

@@ -9,6 +9,7 @@ import {
   Clock,
   Sparkles,
   Archive,
+  AlertCircle,
 } from 'lucide-react';
 import { ImageEngine } from '@mediaforge/image-engine';
 import { ArchiveEngine, ArchiveFileEntry } from '@mediaforge/archive-engine';
@@ -265,6 +266,15 @@ export const BatchStudioPage: React.FC = () => {
                         <Download className="w-3.5 h-3.5" />
                       </button>
                     </div>
+                  )}
+                  {it.status === 'failed' && (
+                    <span
+                      className="text-zinc-400 flex items-center gap-1 font-mono text-[11px]"
+                      title={it.error || 'Conversion failed'}
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 text-zinc-400" />
+                      <span className="truncate max-w-[120px]">{it.error || 'Failed'}</span>
+                    </span>
                   )}
 
                   <button

@@ -38,6 +38,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [copiedBase64, setCopiedBase64] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Studio Controls State
   const [outputFormat, setOutputFormat] = useState('webp');
@@ -176,7 +177,7 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
 
       setProgress(1.0);
     } catch (err: any) {
-      alert(`Image processing error: ${err.message}`);
+      setErrorMessage(`Image processing error: ${err.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -207,6 +208,18 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-750 flex items-center justify-between text-xs text-zinc-200 animate-fadeIn">
+          <span>{errorMessage}</span>
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="text-zinc-400 hover:text-white px-2 py-1 rounded transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Upload Banner / File Selector */}
       {!file ? (
         <div

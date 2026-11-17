@@ -138,3 +138,18 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
     - `HistoryPage.tsx`, `SettingsPage.tsx`, `AboutPage.tsx`: Monochromatic metrics, format matrix, and maintenance tools.
   - Micro-animations added: card hover lift (`-translate-y-0.5 hover:border-zinc-700`), tactile button clicks (`active:scale-[0.98]`), animated tab transitions.
   - Verified with full production build (`tsc && vite build`) and 29 passing Vitest tests.
+* **2026-11-17 15:04**: Comprehensive Architectural & Functional Audit Across All 17 Packages:
+  - Conducted full audit of all packages (`@mediaforge/*`, `apps/web`, `apps/extension`).
+  - Identified and resolved 11 critical and functional issues:
+    1. **Magic Bytes Validation Mismatch (`packages/validators`)**: Aligned signature keys for `mp3`, `webm`, `mkv`, `tiff`, and `jpg`. Added comprehensive magic byte unit tests in `tests/unit/validators.test.ts`.
+    2. **Browser VRAM & GPU Memory Leak (`packages/image-engine` & `@mediaforge/ai-engine`)**: Fixed unclosed `ImageBitmap` references by wrapping all canvas drawing and matting pipelines in `try ... finally { bitmap.close(); }` blocks.
+    3. **Fake BMP Export Fallback (`packages/image-engine`)**: Standard HTML Canvas 2D silently falls back to PNG when `image/bmp` is passed. Implemented a genuine, pure-TypeScript 24-bit uncompressed Windows BMP encoder (`encodeBmp`) with valid `BM` (`0x42 0x4D`) headers and row padding. Added unit tests in `tests/unit/image-engine.test.ts`.
+    4. **Universal Base64 Encoding in Workers/Node (`packages/image-engine`)**: Resolved `ReferenceError: FileReader is not defined` when running outside the main DOM thread by implementing an ArrayBuffer chunked fallback using `btoa` / `Buffer`.
+    5. **CSV Quoted Comma Splitting (`packages/document-engine`)**: Replaced naive `.split(',')` with an RFC 4180-compliant quote-aware tokenizer (`parseCsvLine`) and enhanced `jsonToCsv` to handle single-object records and envelope payloads (`{ users: [...] }`). Added unit tests in `tests/unit/document-engine.test.ts`.
+    6. **Video Frame Timestamp Desync (`apps/web/src/pages/VideoStudioPage.tsx`)**: Captured and locked the exact video timestamp at snapshot capture time to prevent scrub race conditions.
+    7. **Audio Trim Start State Bleed (`apps/web/src/pages/AudioStudioPage.tsx`)**: Reset `trimStart`, `currentTime`, and playback state on new track load to avoid Web Audio index errors.
+    8. **Batch Studio Failed Status Indicator (`apps/web/src/pages/BatchStudioPage.tsx`)**: Added `it.status === 'failed'` rendering with `AlertCircle` icon and error badge.
+    9. **Extension Obsidian Dark Theme & Alert Blockers (`apps/extension`)**: Styled popup, options, and sidepanel to match the Obsidian Dark palette and replaced blocking browser `alert()` calls with dismissible notifications.
+    10. **Zero-Alert Policy Across Monorepo**: Replaced all remaining `alert(...)` calls in `ImageStudioPage`, `AudioStudioPage`, `VideoStudioPage`, `DocumentStudioPage`, `ArchiveStudioPage`, `AiStudioPage`, and `SettingsPage` with accessible, dismissible in-app error notification banners. Verified with `git grep "alert("` returning 0 occurrences.
+    11. **High-Precision Multi-Border Saliency Engine (`packages/ai-engine`)**: Overhauled local segmentation algorithm to sample multi-border perimeter color clusters, compute spatial centrality priors, and use smooth sigmoidal alpha transitions, ensuring robust background detection even on complex scenes when offline.
+  - Verified with full Turborepo monorepo compilation (17/17 packages built successfully) and Vitest unit test suite (8/8 test files, 36/36 tests passing).

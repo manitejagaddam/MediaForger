@@ -9,6 +9,8 @@ This document tracks all pluggable engines, WebAssembly codecs, AI model weights
 | Codec / Engine | Category | Technology | Source / Package | License | Tier |
 |----------------|----------|------------|------------------|---------|------|
 | **Canvas 2D / Offscreen** | Image | Browser Native | Native browser runtime | Built-in | Level 1 |
+| **MediaForge BMP Binary Encoder** | Image (BMP) | Pure TypeScript binary | `@mediaforge/image-engine` | MIT | Level 1 |
+| **Multi-Border Saliency Engine** | Background Removal | Canvas / Color Clustering | `@mediaforge/ai-engine` | MIT | Level 1 |
 | **WebCodecs** | Video/Audio | Browser Native | Native browser runtime | Built-in | Level 1 |
 | **Web Audio API** | Audio | Browser Native | Native browser runtime | Built-in | Level 1 |
 | **LAME MP3 Encoder** | Audio | Pure JS / WASM | `@breezystack/lamejs` | LGPL-3.0 | Level 2 |

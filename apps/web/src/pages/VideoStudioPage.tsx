@@ -35,6 +35,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
   const [videoMeta, setVideoMeta] = useState<VideoMetadata | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [capturedThumbBlob, setCapturedThumbBlob] = useState<Blob | null>(null);
+  const [capturedTime, setCapturedTime] = useState<number>(0);
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -43,6 +44,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
   const [volume, setVolume] = useState(1.0);
   const [isMuted, setIsMuted] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Snapshot options
   const [thumbFormat, setThumbFormat] = useState<'jpeg' | 'png'>('jpeg');
@@ -80,6 +82,10 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
   const handleFileSelected = async (selectedFile: File) => {
     setFile(selectedFile);
     setCapturedThumbBlob(null);
+    setCurrentTime(0);
+    setCapturedTime(0);
+    setIsPlaying(false);
+    setErrorMessage(null);
 
     const inspected = await FileInspector.inspect(selectedFile);
     setInspection(inspected);
@@ -93,7 +99,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
       const url = ObjectUrlManager.create(selectedFile);
       setVideoUrl(url);
     } catch (err: any) {
-      alert(`Video loading error: ${err.message}`);
+      setErrorMessage(`Video loading error: ${err.message}`);
     }
   };
 
@@ -153,9 +159,11 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
   const handleCaptureThumbnail = async () => {
     if (!file) return;
     setIsCapturing(true);
+    setErrorMessage(null);
 
     try {
-      const time = videoRef.current ? videoRef.current.currentTime : 1.0;
+      const time = videoRef.current ? videoRef.current.currentTime : 0;
+      setCapturedTime(time);
       const blob = await VideoEngine.captureThumbnail(file, time, thumbFormat, thumbQuality / 100);
 
       if (thumbUrl) ObjectUrlManager.revoke(thumbUrl);
@@ -177,7 +185,7 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
         completedAt: Date.now(),
       });
     } catch (err: any) {
-      alert(`Thumbnail capture failed: ${err.message}`);
+      setErrorMessage(`Thumbnail capture failed: ${err.message}`);
     } finally {
       setIsCapturing(false);
     }
@@ -186,12 +194,24 @@ export const VideoStudioPage: React.FC<VideoStudioPageProps> = ({ initialFile, o
   const handleDownloadThumbnail = () => {
     if (!capturedThumbBlob || !file) return;
     const cleanBase = file.name.replace(/\.[^/.]+$/, '');
-    const filename = `${cleanBase}_frame_${currentTime.toFixed(2)}s.${thumbFormat}`;
+    const filename = `${cleanBase}_frame_${capturedTime.toFixed(2)}s.${thumbFormat}`;
     ExportManager.download(capturedThumbBlob, filename);
   };
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-750 flex items-center justify-between text-xs text-zinc-200 animate-fadeIn">
+          <span>{errorMessage}</span>
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="text-zinc-400 hover:text-white px-2 py-1 rounded transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {!file ? (
         <div
           onClick={() => fileInputRef.current?.click()}
