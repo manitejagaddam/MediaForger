@@ -50,11 +50,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-56 border-r border-[#1a1a20] bg-[#09090b] flex flex-col justify-between shrink-0 h-screen select-none">
       <div>
         {/* Brand */}
-        <div className="h-14 flex items-center px-4 gap-2.5 border-b border-[#1a1a20]">
-          <div className="w-7 h-7 rounded-lg bg-[#141418] border border-white/[0.08] flex items-center justify-center">
-            <MediaForgeLogo className="w-4 h-4 text-white" size={18} />
+        <div className="h-16 flex items-center px-4 gap-3 border-b border-[#1a1a20]">
+          <div className="w-9 h-9 rounded-xl overflow-hidden shadow-md shrink-0 border border-white/[0.14] bg-[#121216]">
+            <img
+              src="/logo.png?v=3"
+              alt="MediaForge"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <span className="font-semibold text-xs tracking-tight text-zinc-200">MediaForge</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-sm tracking-tight text-white leading-tight truncate">MediaForge</span>
+            <span className="text-[10px] text-zinc-500 font-mono tracking-wider">LOCAL STUDIO</span>
+          </div>
         </div>
 
         {/* Navigation sections */}

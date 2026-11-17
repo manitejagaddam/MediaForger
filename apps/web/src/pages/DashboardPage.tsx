@@ -121,8 +121,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         }`}
       >
         <div className="max-w-md mx-auto space-y-3.5">
-          <div className="w-10 h-10 mx-auto rounded-xl bg-[#141418] border border-white/[0.08] flex items-center justify-center">
-            <MediaForgeLogo className="w-5 h-5 text-white" size={20} />
+          <div className="w-16 h-16 mx-auto rounded-2xl overflow-hidden shadow-xl border border-white/[0.14] bg-[#141418]">
+            <img
+              src="/logo.png?v=3"
+              alt="MediaForge"
+              className="w-full h-full object-cover"
+            />
           </div>
 
           <div>

@@ -3,14 +3,14 @@
   "short_name": "MediaForge",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0B0F19",
-  "theme_color": "#0B0F19",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "description": "Universal privacy-first local media conversion and processing directly on your device",
   "icons": [
     {
-      "src": "/logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/logo.png?v=3",
+      "sizes": "1024x1024",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

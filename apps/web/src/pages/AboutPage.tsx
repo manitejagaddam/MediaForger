@@ -15,8 +15,12 @@ export const AboutPage: React.FC = () => {
       {/* Privacy Manifesto Hero */}
       <div className="glass-panel rounded-xl p-6 space-y-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#141418] border border-white/[0.08] text-zinc-200 flex items-center justify-center">
-            <MediaForgeLogo className="w-5 h-5 text-white" size={20} />
+          <div className="w-12 h-12 rounded-xl overflow-hidden shadow-md shrink-0 border border-white/[0.12] bg-[#121216]">
+            <img
+              src="/logo.png?v=3"
+              alt="MediaForge"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white tracking-tight">

@@ -9,7 +9,6 @@ import {
 import { ImageEngine } from '@mediaforge/image-engine';
 import { ExportManager } from '@mediaforge/core';
 import { ImageProcessingOptions } from '@mediaforge/shared-types';
-import { MediaForgeLogo } from './components/StudioIcons';
 
 export const PopupApp: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -45,9 +44,9 @@ export const PopupApp: React.FC = () => {
     <div className="p-4 space-y-4 bg-[#09090b] text-zinc-100 font-sans border border-zinc-800 rounded-xl">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center shadow-sm">
-            <MediaForgeLogo className="w-5 h-5" size={20} />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg overflow-hidden shadow-sm shrink-0 border border-white/[0.14] bg-[#141418]">
+            <img src="/logo.png?v=3" alt="MediaForge" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-xs font-bold text-zinc-100 tracking-tight">MediaForge Quick</h1>
