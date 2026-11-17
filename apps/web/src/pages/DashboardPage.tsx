@@ -16,6 +16,7 @@ import {
   ForgeArchiveIcon,
   ForgeAiIcon,
   ForgeHistoryIcon,
+  StudioTileIcon,
 } from '../components/icons/StudioIcons';
 
 interface DashboardPageProps {
@@ -202,9 +203,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-[#16161c] border border-white/[0.08] flex items-center justify-center text-zinc-200 group-hover:border-white/[0.18] transition-colors">
-                      <Icon className="w-4 h-4 text-zinc-200" />
-                    </div>
+                    <StudioTileIcon studio={studio.id as any} className="w-8 h-8" />
                     <ArrowRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-200 group-hover:translate-x-0.5 transition-all" />
                   </div>
 
