@@ -24,6 +24,7 @@ import { BUILTIN_PRESETS } from '@mediaforge/presets';
 import { ObjectUrlManager } from '@mediaforge/storage';
 import { db } from '@mediaforge/database';
 import { ForgeImageIcon } from '../components/icons/StudioIcons';
+import { ImageComparisonSlider } from '../components/ImageComparisonSlider';
 
 interface ImageStudioPageProps {
   initialFile?: File | null;
@@ -40,6 +41,8 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
   const [progress, setProgress] = useState(0);
   const [copiedBase64, setCopiedBase64] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'split' | 'output' | 'original'>('split');
+  const [splitPos, setSplitPos] = useState<number>(50);
 
   // Studio Controls State
   const [outputFormat, setOutputFormat] = useState('webp');
@@ -268,6 +271,38 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {outputUrl && (
+                    <div className="flex items-center bg-[#121216] border border-white/[0.06] rounded-lg p-0.5 text-xs mr-1">
+                      <button
+                        onClick={() => setViewMode('split')}
+                        className={`px-2.5 py-1 rounded text-xs transition ${
+                          viewMode === 'split' ? 'bg-[#181820] text-white font-medium' : 'text-zinc-400 hover:text-white'
+                        }`}
+                        title="Interactive Before / After Split Slider"
+                      >
+                        Split
+                      </button>
+                      <button
+                        onClick={() => setViewMode('output')}
+                        className={`px-2.5 py-1 rounded text-xs transition ${
+                          viewMode === 'output' ? 'bg-[#181820] text-white font-medium' : 'text-zinc-400 hover:text-white'
+                        }`}
+                        title="Processed Output Only"
+                      >
+                        Output
+                      </button>
+                      <button
+                        onClick={() => setViewMode('original')}
+                        className={`px-2.5 py-1 rounded text-xs transition ${
+                          viewMode === 'original' ? 'bg-[#181820] text-white font-medium' : 'text-zinc-400 hover:text-white'
+                        }`}
+                        title="Original Input Only"
+                      >
+                        Original
+                      </button>
+                    </div>
+                  )}
+
                   <button
                     onClick={handleCopyBase64}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-800 text-xs text-zinc-300 hover:text-white border border-zinc-700/60 transition active:scale-[0.98]"
@@ -289,24 +324,40 @@ export const ImageStudioPage: React.FC<ImageStudioPageProps> = ({ initialFile, o
                 </div>
               </div>
 
-              {/* Image Preview Canvas */}
-              <div className="relative min-h-[360px] max-h-[500px] rounded-xl bg-[#09090c] border border-zinc-800/80 flex items-center justify-center overflow-hidden p-4 group">
-                <img
-                  src={outputUrl || inputUrl || ''}
-                  alt="Preview"
-                  className="max-h-[460px] max-w-full object-contain rounded-lg transition-all"
-                  style={{
-                    filter: `grayscale(${grayscale ? 1 : 0}) brightness(${100 + brightness}%) contrast(${100 + contrast}%)`,
-                    transform: `rotate(${rotation}deg) scaleX(${flipH ? -1 : 1}) scaleY(${flipV ? -1 : 1})`,
-                  }}
-                />
+              {/* Image Preview Canvas or Interactive Split Slider */}
+              {outputUrl && inputUrl && viewMode === 'split' ? (
+                <div className="glass-panel p-2 rounded-xl">
+                  <ImageComparisonSlider
+                    originalSrc={inputUrl}
+                    processedSrc={outputUrl}
+                    originalLabel="Original Input"
+                    processedLabel={`Processed (${outputResult?.format?.toUpperCase() || outputFormat.toUpperCase()})`}
+                    position={splitPos}
+                    onPositionChange={setSplitPos}
+                    heightClass="h-[440px]"
+                    showPresets={true}
+                    showBottomBar={true}
+                  />
+                </div>
+              ) : (
+                <div className="relative min-h-[360px] max-h-[500px] rounded-xl bg-[#09090c] border border-zinc-800/80 flex items-center justify-center overflow-hidden p-4 group">
+                  <img
+                    src={viewMode === 'original' ? inputUrl || '' : outputUrl || inputUrl || ''}
+                    alt="Preview"
+                    className="max-h-[460px] max-w-full object-contain rounded-lg transition-all"
+                    style={{
+                      filter: `grayscale(${grayscale ? 1 : 0}) brightness(${100 + brightness}%) contrast(${100 + contrast}%)`,
+                      transform: `rotate(${rotation}deg) scaleX(${flipH ? -1 : 1}) scaleY(${flipV ? -1 : 1})`,
+                    }}
+                  />
 
-                {outputUrl && (
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-zinc-800/95 border border-zinc-700 text-zinc-200 text-[11px] font-semibold tracking-wide uppercase shadow">
-                    Processed Output
-                  </div>
-                )}
-              </div>
+                  {outputUrl && (
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-zinc-800/95 border border-zinc-700 text-zinc-200 text-[11px] font-semibold tracking-wide uppercase shadow">
+                      {viewMode === 'original' ? 'Original Input' : 'Processed Output'}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Before/After Size Comparison Card */}
               {outputResult && (

@@ -40,6 +40,7 @@ import { ObjectUrlManager } from '@mediaforge/storage';
 import { FileInspector, ExportManager } from '@mediaforge/core';
 import { InspectionResult } from '@mediaforge/shared-types';
 import { ForgeAiIcon } from '../components/icons/StudioIcons';
+import { ImageComparisonSlider } from '../components/ImageComparisonSlider';
 
 interface AiStudioPageProps {
   initialFile?: File | null;
@@ -297,8 +298,34 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
     const naturalWidth = img.naturalWidth || inspection?.width || 100;
     const naturalHeight = img.naturalHeight || inspection?.height || 100;
 
-    const normX = Math.max(0, Math.min(1, clickX / rect.width));
-    const normY = Math.max(0, Math.min(1, clickY / rect.height));
+    // Account for object-contain letterboxing
+    const elemRatio = rect.width / rect.height;
+    const naturalRatio = naturalWidth / naturalHeight;
+
+    let contentW = rect.width;
+    let contentH = rect.height;
+    let contentLeft = 0;
+    let contentTop = 0;
+
+    if (elemRatio > naturalRatio) {
+      // Letterbox on left and right
+      contentW = rect.height * naturalRatio;
+      contentLeft = (rect.width - contentW) / 2;
+    } else {
+      // Letterbox on top and bottom
+      contentH = rect.width / naturalRatio;
+      contentTop = (rect.height - contentH) / 2;
+    }
+
+    const relX = clickX - contentLeft;
+    const relY = clickY - contentTop;
+
+    if (relX < 0 || relX > contentW || relY < 0 || relY > contentH) {
+      return; // Clicked on letterbox padding
+    }
+
+    const normX = Math.max(0, Math.min(1, relX / contentW));
+    const normY = Math.max(0, Math.min(1, relY / contentH));
 
     const pixelX = Math.floor(normX * naturalWidth);
     const pixelY = Math.floor(normY * naturalHeight);
@@ -712,70 +739,32 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                   )}
 
                   {/* Interactive Viewport Canvas */}
-                  <div className="relative rounded-xl bg-[#09090b] border border-[#222227] overflow-hidden min-h-[380px] flex items-center justify-center select-none">
+                  <div className="relative rounded-xl bg-[#09090b] border border-[#222227] overflow-hidden min-h-[380px] p-2 flex flex-col items-center justify-center select-none">
                     {/* Checkerboard background for transparency preview */}
                     <div
-                      className="absolute inset-0 opacity-15"
+                      className="absolute inset-0 opacity-15 pointer-events-none"
                       style={{
                         backgroundImage: `radial-gradient(#71717a 1px, transparent 1px)`,
                         backgroundSize: '16px 16px',
                       }}
                     />
 
-                    {/* Mode 1: Split-View Slider */}
+                    {/* Mode 1: Interactive Draggable Split-View Slider */}
                     {viewMode === 'split' && result && outputUrl && inputUrl ? (
-                      <div className="relative w-full h-[440px] overflow-hidden flex items-center justify-center">
-                        {/* Processed (After) Image */}
-                        <img
-                          src={outputUrl}
-                          alt="AI Output"
-                          className="absolute max-h-full max-w-full object-contain pointer-events-none"
-                        />
-
-                        {/* Original (Before) Image with clip-path */}
-                        <div
-                          className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                          style={{
-                            clipPath: `polygon(0 0, ${splitSliderPos}% 0, ${splitSliderPos}% 100%, 0 100%)`,
-                          }}
-                        >
-                          <img
-                            ref={previewImgRef}
-                            src={inputUrl}
-                            alt="Original Input"
-                            onClick={handlePreviewClick}
-                            className={`max-h-full max-w-full object-contain ${
-                              pointerTool !== 'inspect' ? 'cursor-crosshair ring-2 ring-purple-400' : ''
-                            }`}
-                          />
-                        </div>
-
-                        {/* Divider Line & Handle */}
-                        <div
-                          className="absolute top-0 bottom-0 w-0.5 bg-white pointer-events-none shadow-lg"
-                          style={{ left: `${splitSliderPos}%` }}
-                        >
-                          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-zinc-950 border-2 border-white flex items-center justify-center shadow-md text-[9px] font-bold text-white">
-                            ↔
-                          </div>
-                        </div>
-
-                        {/* Labels */}
-                        <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
-                          Original Input
-                        </div>
-                        <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-200 border border-zinc-800">
-                          {bgMode === 'transparent' ? 'Alpha Cutout' : `Replaced (${bgMode})`}
-                        </div>
-
-                        {/* Scrub Range Slider */}
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={splitSliderPos}
-                          onChange={(e) => setSplitSliderPos(Number(e.target.value))}
-                          className="absolute bottom-3 left-6 right-6 opacity-75 hover:opacity-100 transition cursor-pointer"
+                      <div className="w-full">
+                        <ImageComparisonSlider
+                          originalSrc={inputUrl}
+                          processedSrc={outputUrl}
+                          originalLabel="Original Input"
+                          processedLabel={bgMode === 'transparent' ? 'Alpha Cutout' : `Replaced (${bgMode})`}
+                          position={splitSliderPos}
+                          onPositionChange={setSplitSliderPos}
+                          heightClass="h-[440px]"
+                          onImageClick={handlePreviewClick}
+                          isInteractiveToolActive={pointerTool !== 'inspect'}
+                          cursorClass={pointerTool !== 'inspect' ? 'cursor-crosshair' : undefined}
+                          showPresets={true}
+                          showBottomBar={true}
                         />
                       </div>
                     ) : viewMode === 'matte' && matteUrl ? (
@@ -786,7 +775,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           alt="Alpha Matte Mask"
                           className="max-h-[400px] max-w-full object-contain rounded-lg"
                         />
-                        <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
+                        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
                           Alpha Silhouette Mask
                         </div>
                       </div>
@@ -798,7 +787,7 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                           alt="AI Output Composite"
                           className="max-h-[400px] max-w-full object-contain rounded-lg"
                         />
-                        <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
+                        <div className="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-zinc-900/90 backdrop-blur text-[10px] font-mono text-zinc-300 border border-zinc-800">
                           {result?.modelUsed}
                         </div>
                       </div>
@@ -806,41 +795,43 @@ export const AiStudioPage: React.FC<AiStudioPageProps> = ({
                       /* Mode 4: Original Input Preview with Interactive Click Sampling */
                       inputUrl && (
                         <div className="relative p-2 flex items-center justify-center max-h-[440px]">
-                          <img
-                            ref={previewImgRef}
-                            src={inputUrl}
-                            alt="Input Preview"
-                            onClick={handlePreviewClick}
-                            className={`max-h-[400px] max-w-full object-contain rounded-lg ${
-                              pointerTool !== 'inspect' ? 'cursor-crosshair ring-2 ring-purple-400' : ''
-                            }`}
-                          />
+                          <div className="relative inline-flex items-center justify-center max-h-[400px] max-w-full">
+                            <img
+                              ref={previewImgRef}
+                              src={inputUrl}
+                              alt="Input Preview"
+                              onClick={handlePreviewClick}
+                              className={`max-h-[400px] max-w-full object-contain rounded-lg ${
+                                pointerTool !== 'inspect' ? 'cursor-crosshair ring-2 ring-purple-400' : ''
+                              }`}
+                            />
 
-                          {/* Pinned Subject Marker */}
-                          {sampleFgPoint && (
-                            <div
-                              className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-purple-600 shadow-lg pointer-events-none flex items-center justify-center animate-bounce"
-                              style={{
-                                left: `${sampleFgPoint[0] * 100}%`,
-                                top: `${sampleFgPoint[1] * 100}%`,
-                              }}
-                            >
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                            </div>
-                          )}
+                            {/* Pinned Subject Marker */}
+                            {sampleFgPoint && (
+                              <div
+                                className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-purple-600 shadow-lg pointer-events-none flex items-center justify-center animate-bounce z-20"
+                                style={{
+                                  left: `${sampleFgPoint[0] * 100}%`,
+                                  top: `${sampleFgPoint[1] * 100}%`,
+                                }}
+                              >
+                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                              </div>
+                            )}
 
-                          {/* Eyedropper Sampled Background Marker */}
-                          {sampleBgPoint && (
-                            <div
-                              className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-red-600 shadow-lg pointer-events-none flex items-center justify-center"
-                              style={{
-                                left: `${sampleBgPoint[0] * 100}%`,
-                                top: `${sampleBgPoint[1] * 100}%`,
-                              }}
-                            >
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                            </div>
-                          )}
+                            {/* Eyedropper Sampled Background Marker */}
+                            {sampleBgPoint && (
+                              <div
+                                className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-red-600 shadow-lg pointer-events-none flex items-center justify-center z-20"
+                                style={{
+                                  left: `${sampleBgPoint[0] * 100}%`,
+                                  top: `${sampleBgPoint[1] * 100}%`,
+                                }}
+                              >
+                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )
                     )}
