@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PageId } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
+import { DeliveryModal } from './components/DeliveryModal';
 import { DashboardPage } from './pages/DashboardPage';
 import { ImageStudioPage } from './pages/ImageStudioPage';
 import { AudioStudioPage } from './pages/AudioStudioPage';
@@ -14,9 +15,16 @@ import { HistoryPage } from './pages/HistoryPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AboutPage } from './pages/AboutPage';
 import { getStorageQuota } from '@mediaforge/storage';
+import {
+  createDemoPortraitImage,
+  createDemoAudioTrack,
+  createDemoVideoFile,
+  createDemoCsvFile,
+} from './utils/demoFixtures';
 
 export const App: React.FC = () => {
   const [activePage, setActivePage] = useState<PageId>('dashboard');
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [studioFiles, setStudioFiles] = useState<{
     image: File | null;
     audio: File | null;
@@ -61,6 +69,45 @@ export const App: React.FC = () => {
     }));
   };
 
+  const handleLoadDemoAsset = async (
+    type: 'portrait' | 'audio' | 'video' | 'csv'
+  ) => {
+    try {
+      if (type === 'portrait') {
+        const file = await createDemoPortraitImage();
+        setStudioFiles((prev) => ({
+          ...prev,
+          image: file,
+          ai: file,
+        }));
+        setActivePage('image');
+      } else if (type === 'audio') {
+        const file = await createDemoAudioTrack();
+        setStudioFiles((prev) => ({
+          ...prev,
+          audio: file,
+        }));
+        setActivePage('audio');
+      } else if (type === 'video') {
+        const file = await createDemoVideoFile();
+        setStudioFiles((prev) => ({
+          ...prev,
+          video: file,
+        }));
+        setActivePage('video');
+      } else if (type === 'csv') {
+        const file = await createDemoCsvFile();
+        setStudioFiles((prev) => ({
+          ...prev,
+          document: file,
+        }));
+        setActivePage('document');
+      }
+    } catch (err) {
+      console.error('Failed to load demo asset:', err);
+    }
+  };
+
   const renderActivePage = () => {
     switch (activePage) {
       case 'dashboard':
@@ -68,6 +115,8 @@ export const App: React.FC = () => {
           <DashboardPage
             onNavigate={setActivePage}
             onSelectFile={handleSelectFile}
+            onOpenDelivery={() => setIsDeliveryModalOpen(true)}
+            onLoadDemo={handleLoadDemoAsset}
           />
         );
       case 'image':
@@ -126,6 +175,8 @@ export const App: React.FC = () => {
           <DashboardPage
             onNavigate={setActivePage}
             onSelectFile={handleSelectFile}
+            onOpenDelivery={() => setIsDeliveryModalOpen(true)}
+            onLoadDemo={handleLoadDemoAsset}
           />
         );
     }
@@ -142,9 +193,19 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <Header activePage={activePage} />
+        <Header
+          activePage={activePage}
+          onOpenDelivery={() => setIsDeliveryModalOpen(true)}
+          onLoadDemo={handleLoadDemoAsset}
+        />
         <main className="flex-1 overflow-y-auto">{renderActivePage()}</main>
       </div>
+
+      {/* Client Deliverables & Transit Packaging Modal */}
+      <DeliveryModal
+        isOpen={isDeliveryModalOpen}
+        onClose={() => setIsDeliveryModalOpen(false)}
+      />
     </div>
   );
 };

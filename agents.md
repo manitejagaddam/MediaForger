@@ -14,12 +14,14 @@ graph TD
     EXT["Browser Extension Specialist\n(Chrome MV3, Offscreen Docs, Context Menus)"]
     SEC_PERF["Security & Performance Specialist\n(Sanitization, Limits, OPFS, Quotas, Zero-leakage)"]
     QA["QA & Verification Specialist\n(Vitest, Playwright, Fixtures, Output Header Validation)"]
+    DELIVERY["Client Deliverables & Transit Specialist\n(SHA-256 Manifests, Certified Archives, Demo Fixtures)"]
 
     ARCH --> FULLSTACK
     ARCH --> MEDIA
     ARCH --> EXT
     ARCH --> SEC_PERF
     ARCH --> QA
+    ARCH --> DELIVERY
 ```
 
 ### 1. Principal Software Architect
@@ -46,6 +48,10 @@ graph TD
 * **Primary Scope**: Automated test suites (unit, integration, e2e), media fixture generators, signature verifiers, regression prevention.
 * **Key Principles**: A successful exit code is not proof of conversion; verify file headers, stream durations, pixel dimensions, and transparency.
 
+### 7. Client Deliverables & Transit Packaging Specialist
+* **Primary Scope**: Manages asset staging, cryptographic hash integrity calculation (SHA-256), client provenance manifests (`manifest.json`), zero-leakage certificates (`DELIVERY_CERTIFICATE.txt`), and sealed transit archives.
+* **Key Principles**: Every client deliverable must have verifiable mathematical provenance; all hashes generated in-browser via `crypto.subtle`; zero cloud metadata leakage.
+
 ---
 
 ## 2. Agent Execution Protocols
@@ -53,10 +59,16 @@ graph TD
 1. **Protocol 1: Verification Before Commit**:
    - Every functional step must compile and pass tests before staging and committing.
    - Stage atomic changes with descriptive, standardized conventional commit messages (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`).
-2. **Protocol 2: Context Maintenance**:
+2. **Protocol 2: Context & Memory Maintenance**:
    - Update `context.md` whenever state, schemas, or active components change.
    - Update `records.md` with new ADRs, step logs, and verification outputs.
    - Update `addons.md` when new codecs, models, or presets are added.
+   - Maintain `logs.md` continuously with concise records of completed tasks and updated file structures so all changes are persistent and discoverable.
 3. **Protocol 3: Zero-Mock Rule**:
    - Simulated delays, fabricated file sizes, or placeholder outputs are strictly forbidden. All logic must process real bytes and produce real output buffers.
+4. **Protocol 4: Live Presentation & Demo Readiness**:
+   - Maintain in-memory and synthetic generation utilities (`demoFixtures.ts`) for all primary media modalities (4K portrait PNG, harmonic stereo WAV, WebM animation, inventory CSV).
+   - Any live demo must be instantiable with 1 click without requiring local file searching or cloud downloads.
+5. **Protocol 5: Continuous Logging & Traceability**:
+   - Whenever an audit, refactor, or feature addition is completed, append or update `logs.md` summarizing the tasks completed, the affected directory structures, and the test pass counts.
 

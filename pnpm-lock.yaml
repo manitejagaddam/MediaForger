@@ -417,6 +417,9 @@ importers:
       '@mediaforge/worker-runtime':
         specifier: workspace:*
         version: link:../worker-runtime
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
     devDependencies:
       typescript:
         specifier: ^5.7.3

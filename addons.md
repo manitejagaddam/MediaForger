@@ -65,3 +65,50 @@ All AI models run 100% locally on-device via ONNX Runtime Web. Models are downlo
 * **High Quality GIF**: 480p, 15 FPS, Floyd-Steinberg dithering with optimized palette
 * **Audio-Only Extraction**: MP3 192 kbps extracted directly from video stream
 
+---
+
+## 4. Client Deliverables & Transit Packaging Engine
+
+| Engine / Component | Module Location | Technology | Output Artifacts | Security & Integrity |
+|---|---|---|---|---|
+| **DeliveryEngine** | `@mediaforge/core` | Web Crypto API + `fflate` | `manifest.json`, `DELIVERY_CERTIFICATE.txt`, `checksums.sha256`, `.zip` | SHA-256 byte hashes, zero-egress signed certificate |
+| **DeliveryModal** | `apps/web` | React 19 + Lucide + Tailwind | Interactive staging & certification dialog | Client-side export trigger, formatted certificate clipboard copy |
+
+### Deliverable Architecture
+1. **Asset Intake**: Consumes processed blobs and user files tagged with category (`image`, `audio`, `video`, `document`, `archive`, `ai`).
+2. **Cryptographic Integrity**: Computes SHA-256 hash digests for every staged asset via `crypto.subtle.digest('SHA-256', buffer)`.
+3. **Audit Certificate**: Generates ASCII formatted `DELIVERY_CERTIFICATE.txt` certifying:
+   - Packaging timestamp (ISO 8601).
+   - Recipient Client & Project identifiers.
+   - Per-file SHA-256 signatures, size in bytes, and format classifications.
+   - MediaForge Zero-Egress Privacy Attestation (100% on-device client processing).
+4. **Standard Checksums**: Generates GNU-compatible `checksums.sha256` for command-line validation (`sha256sum -c`).
+5. **Sealed Archive**: Compresses all assets and manifest documents into a consolidated deliverable ZIP archive via `fflate`.
+
+---
+
+## 5. Live Presentation Demo Fixture Engine
+
+| Fixture Type | Generator Utility | Technology | Output Format | Runtime Latency |
+|---|---|---|---|---|
+| **Executive Portrait** | `createDemoPortraitImage()` | HTML5 Canvas 2D | PNG (800 × 800) | < 10 ms |
+| **Audio Soundtrack** | `createDemoAudioTrack()` | Web Audio API (`OfflineAudioContext`) | WAV (4.0s Stereo, 44.1 kHz) | < 40 ms |
+| **Animation Loop** | `createDemoVideoFile()` | Canvas 2D + `MediaRecorder` | WebM (640 × 480, 60 frames) | < 80 ms |
+| **Inventory Dataset** | `createDemoCsvFile()` | UTF-8 String + Blob | CSV (5 records with headers) | < 2 ms |
+
+---
+
+## 6. Enterprise Transportation Add-on Recommendations
+
+For advanced enterprise production and multi-party distribution, the following prospective add-ons are planned:
+
+1. **BagIt RFC 8493 Archival Packaging**:
+   - Hierarchical data directory with `bag-info.txt`, `manifest-sha256.txt`, and `tagmanifest-sha256.txt` standard for library and archival transit.
+2. **C2PA Content Credentials Provenance Manifest**:
+   - Cryptographic tamper-evident metadata asserting source tool ("MediaForge Engine v1.0.0"), edit actions, and cryptographic identity without cloud dependencies.
+3. **SMPTE Interoperable Master Format (IMF) Packaging**:
+   - Composition Playlists (CPL) and Packing Lists (PKL) for enterprise broadcast and cinematic distribution.
+4. **Peer-to-Peer Encrypted Transit (WebRTC DataChannel)**:
+   - Zero-server, point-to-point direct browser file transit between colleagues with end-to-end DTLS/SRTP encryption.
+
+

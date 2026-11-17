@@ -172,3 +172,20 @@ This document tracks all Architectural Decision Records (ADRs), execution logs, 
     - `ForgeSettingsIcon`: Precision engineered planetary calibration gear with axle teeth.
   - Integrated across all 11 studio & utility pages in `apps/web` and browser extension `apps/extension`.
   - Verified 17/17 Turborepo package builds passing and 36/36 Vitest unit tests passing.
+* **2026-11-17 15:45**: Client Deliverables & Transit Engine, Live Presentation Demo Suite, and Continuous Logging Protocol:
+  - Addressed user requirement for a complete, presentation-ready application with transit/delivery capabilities for demonstration.
+  - Implemented `@mediaforge/core/src/delivery-engine.ts` (`DeliveryEngine`):
+    - Computes SHA-256 byte digests via Web Crypto API (`crypto.subtle.digest`).
+    - Generates client-facing audit manifest (`manifest.json`), GNU-compatible `checksums.sha256`, and human-readable attestation certificate (`DELIVERY_CERTIFICATE.txt`) confirming 100% zero-egress local processing.
+    - Packages staged assets and manifests into a sealed transit ZIP archive via `fflate`.
+  - Built `apps/web/src/components/DeliveryModal.tsx` for client transit packaging with real-time SHA-256 calculation, monospace certificate view with 1-click clipboard copy, and sealed bundle download.
+  - Implemented `apps/web/src/utils/demoFixtures.ts` for live presentation demonstration:
+    - `createDemoPortraitImage`: Generates realistic 800x800 high-res portrait PNG on-the-fly via 2D Canvas.
+    - `createDemoAudioTrack`: Synthesizes 4-second harmonic stereo A-minor progression via `OfflineAudioContext` into clean WAV.
+    - `createDemoVideoFile`: Renders 60-frame 2-second animated canvas via `MediaRecorder` into WebM.
+    - `createDemoCsvFile`: Generates structured hardware inventory CSV dataset with headers and quoted fields.
+  - Integrated into `Header.tsx`, `DashboardPage.tsx`, and `App.tsx` with dedicated "Live Presentation & Demo Mode" action bar and dropdown fixtures.
+  - Added unit test suite `tests/unit/delivery-engine.test.ts` (3 tests).
+  - Created `logs.md` summarizing tasks and monorepo file structure changes.
+  - Updated `AGENTS.md` and `addons.md` with continuous logging protocol, demo readiness protocol, and enterprise transportation recommendations.
+  - Verified 9 passed test suites (39 tests) and 17/17 package builds.

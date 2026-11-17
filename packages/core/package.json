@@ -16,7 +16,8 @@
     "@mediaforge/storage": "workspace:*",
     "@mediaforge/validators": "workspace:*",
     "@mediaforge/wasm-runtime": "workspace:*",
-    "@mediaforge/worker-runtime": "workspace:*"
+    "@mediaforge/worker-runtime": "workspace:*",
+    "fflate": "^0.8.3"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

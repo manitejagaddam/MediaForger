@@ -4,6 +4,8 @@ import {
   ArrowRight,
   FileCode,
   Zap,
+  Package,
+  Sparkles,
 } from 'lucide-react';
 import { PageId } from '../types';
 import { FileInspector, CapabilityDetector, FormatRegistry } from '@mediaforge/core';
@@ -25,11 +27,15 @@ import {
 interface DashboardPageProps {
   onNavigate: (page: PageId) => void;
   onSelectFile: (file: File, targetStudio: PageId) => void;
+  onOpenDelivery?: () => void;
+  onLoadDemo?: (type: 'portrait' | 'audio' | 'video' | 'csv') => void;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   onNavigate,
   onSelectFile,
+  onOpenDelivery,
+  onLoadDemo,
 }) => {
   const [dragOver, setDragOver] = useState(false);
   const [recentHistory, setRecentHistory] = useState<ConversionHistoryItem[]>([]);
@@ -152,6 +158,67 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               }}
             />
           </label>
+        </div>
+      </div>
+
+      {/* Live Demo Showcase & Client Delivery Dispatcher Bar */}
+      <div className="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 border border-zinc-800/80 bg-zinc-900/40">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-zinc-300">
+            <Sparkles className="w-4 h-4 text-zinc-200" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-white tracking-tight flex items-center gap-1.5">
+              Live Presentation & Demo Mode
+              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono border border-zinc-700">
+                1-Click Fixtures
+              </span>
+            </h4>
+            <p className="text-[11px] text-zinc-400">
+              Instantly test and demonstrate local processing with pre-synthesized media fixtures.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap text-xs">
+          {onLoadDemo && (
+            <>
+              <button
+                onClick={() => onLoadDemo('portrait')}
+                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+              >
+                Demo Portrait (AI/Matte)
+              </button>
+              <button
+                onClick={() => onLoadDemo('audio')}
+                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+              >
+                Demo Audio (LAME MP3)
+              </button>
+              <button
+                onClick={() => onLoadDemo('video')}
+                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+              >
+                Demo Video (60FPS)
+              </button>
+              <button
+                onClick={() => onLoadDemo('csv')}
+                className="px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/80 font-medium transition active:scale-95"
+              >
+                Demo Dataset (CSV)
+              </button>
+            </>
+          )}
+
+          {onOpenDelivery && (
+            <button
+              onClick={onOpenDelivery}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-zinc-950 font-bold shadow-sm hover:bg-zinc-100 transition active:scale-95 ml-1"
+            >
+              <Package className="w-3.5 h-3.5 text-zinc-950" />
+              <span>Client Delivery Vault</span>
+            </button>
+          )}
         </div>
       </div>
 
